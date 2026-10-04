@@ -145,7 +145,7 @@ Content-Type: application/json
 
 ## 📋 Available Deal Properties
 
-HubSpot provides standard deal properties. Stage IDs correspond to internal IDs in the default Sales Pipeline:
+The following standard deal properties were verified against the live HubSpot CRM API `GET /crm/v3/properties/deals` endpoint (recorded in `test-results/deal-properties.json`, total 207 available properties). Stage IDs correspond to internal IDs in the default Sales Pipeline:
 
 | Internal Property Name | Display Label | Type | Description |
 |------------------------|---------------|------|-------------|
