@@ -8,9 +8,8 @@ This document records the HubSpot developer test account and private app setup d
 
 ## 👤 Account & Private App Details
 
-- **Developer Account Email**: `[Developer Email]`
-- **Test Account Name**: `[Test Account Name]`
-- **HubSpot Portal (Hub) ID**: `[Portal ID]`
+- **Test Account Name**: `sarkarsurojit725@gmail.com`
+- **HubSpot Portal (Hub) ID**: `247598766`
 - **Private App Name**: `DLT Deals Extractor`
 - **Required Scopes**: `crm.objects.deals.read`
 - **Creation Date**: `2026-10-04`

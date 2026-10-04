@@ -829,6 +829,57 @@ def create_api():
                     "error": str(e)
                 }, 500
 
+    @scan_ns.route('/<string:scan_id>/resume')
+    class ResumeScan(Resource):
+        @scan_ns.response(400, 'Cannot resume scan')
+        @scan_ns.response(404, 'Scan not found')
+        @scan_ns.response(409, 'Invalid scan state for resume')
+        @scan_ns.response(500, 'Internal server error')
+        def post(self, scan_id):
+            """Resume a paused or crashed scan"""
+            request_id = getattr(g, 'request_id', str(uuid.uuid4()))
+            
+            try:
+                result = executor.submit(asyncio.run, extraction_service.resume_scan(scan_id)).result()
+                
+                if result.get('success'):
+                    logger.info(
+                        "Scan resumed successfully",
+                        extra={'request_id': request_id, 'scan_id': scan_id}
+                    )
+                    return result, 200
+                else:
+                    msg = result.get('message', '')
+                    if "not found" in msg.lower():
+                        status_code = 404
+                    else:
+                        status_code = 409 if "cannot resume" in msg.lower() else 400
+                    logger.warning(
+                        "Scan resume failed",
+                        extra={
+                            'request_id': request_id,
+                            'scan_id': scan_id,
+                            'reason': msg
+                        }
+                    )
+                    return {
+                        "success": False,
+                        "message": msg,
+                        "error": msg
+                    }, status_code
+
+            except Exception as e:
+                logger.error(
+                    "Error resuming scan",
+                    extra={'request_id': request_id, 'scan_id': scan_id, 'error': str(e)},
+                    exc_info=True
+                )
+                return {
+                    "success": False,
+                    "message": f"Failed to resume scan: {str(e)}",
+                    "error": str(e)
+                }, 500
+
 
     logger.info(
         "API created successfully",

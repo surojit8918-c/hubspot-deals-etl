@@ -54,7 +54,7 @@ def deep_serialize(data):
         return make_json_serializable(data)
 
 
-def build_dataset_name(organization_id: str, prefix: str = "hubspot_users") -> str:
+def build_dataset_name(organization_id: str, prefix: str = "hubspot_deals") -> str:
     """Build a dataset name from organization ID"""
     return f"{prefix}_{organization_id.replace('-', '_')}"
 
@@ -81,7 +81,7 @@ def enhance_filters_with_metadata(filters: Dict[str, Any], scan_id: str) -> Dict
 def build_dlt_env_vars(config: Dict[str, Any]) -> Dict[str, str]:
     """Build DLT environment variables from config"""
     return {
-        'DESTINATION__POSTGRES__CREDENTIALS__DATABASE': config.get('db_name', 'hubspot_data'),
+        'DESTINATION__POSTGRES__CREDENTIALS__DATABASE': config.get('db_name', 'hubspot_deals_data'),
         'DESTINATION__POSTGRES__CREDENTIALS__USERNAME': config.get('db_user', 'postgres'),
         'DESTINATION__POSTGRES__CREDENTIALS__PASSWORD': config.get('db_password', ''),
         'DESTINATION__POSTGRES__CREDENTIALS__HOST': config.get('db_host', 'localhost'),

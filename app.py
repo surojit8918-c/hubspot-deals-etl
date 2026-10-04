@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask
 from flask_cors import CORS
 import logging
@@ -44,21 +45,43 @@ def create_app(config_name: str = None) -> Flask:
     # Root route
     @app.route('/')
     def index():
-        # Corrected documentation path to match the new root prefix
         return {
             "service": config.APP_TITLE,
             "version": config.APP_VERSION,
-            "documentation": config.API_DOCS_PATH, # Corrected path
-            "health": "api/v1/health",
+            "documentation": config.API_DOCS_PATH,
+            "health": "/api/health",
             "endpoints": {
-                "start_scan": "POST /api/v1/scan/start",
-                "scan_status": "GET /api/v1/scan/{scan_id}/status",
-                "cancel_scan": "POST /api/v1/scan/{scan_id}/cancel",
-                "list_scans": "GET /api/v1/scan/list",
-                "pipeline_info": "GET /api/v1/pipeline/info",
-                "cleanup": "POST /api/v1/maintenance/cleanup"
+                "start_scan": "POST /api/scan/start",
+                "scan_status": "GET /api/scan/{scan_id}/status",
+                "pause_scan": "POST /api/scan/{scan_id}/pause",
+                "resume_scan": "POST /api/scan/{scan_id}/resume",
+                "cancel_scan": "POST /api/scan/{scan_id}/cancel",
+                "list_scans": "GET /api/scan/list",
+                "pipeline_info": "GET /api/pipeline/info",
+                "cleanup": "POST /api/maintenance/cleanup"
             }
         }
+
+    # Root-level health endpoint alias
+    @app.route('/health')
+    def root_health():
+        try:
+            from services.extraction_service import ExtractionService
+            extraction_service = ExtractionService(config.get_extraction_config())
+            pipeline_info = extraction_service.get_pipeline_info()
+            return {
+                "status": "healthy",
+                "timestamp": datetime.utcnow().isoformat(),
+                "service": config.DLT_PIPELINE_NAME,
+                "pipeline": pipeline_info
+            }, 200
+        except Exception as e:
+            return {
+                "status": "unhealthy",
+                "timestamp": datetime.utcnow().isoformat(),
+                "service": config.DLT_PIPELINE_NAME,
+                "error": str(e)
+            }, 500
     
     return app
 

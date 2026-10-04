@@ -41,17 +41,24 @@ class Config:
     DLT_WORKING_DIR = os.environ.get('DLT_WORKING_DIR', '.dlt')
     DLT_RUNTIME_ENV = os.environ.get('DLT_RUNTIME_ENV', 'production')
     
-    # External API settings
-    API_BASE_URL = os.environ.get('API_BASE_URL', 'https://api.example.com')
-    API_TIMEOUT = int(os.environ.get('API_TIMEOUT', 30))
-    API_RATE_LIMIT = int(os.environ.get('API_RATE_LIMIT', 100))
-    API_USERS_ENDPOINT = os.environ.get('API_USERS_ENDPOINT', '/users')
-    API_TEAMS_ENDPOINT = os.environ.get('API_TEAMS_ENDPOINT', '/teams')
-    API_RETRY_ATTEMPTS = int(os.environ.get('API_RETRY_ATTEMPTS', 3))
-    API_RETRY_DELAY = int(os.environ.get('API_RETRY_DELAY', 1))
-    
+    # External API settings (HubSpot)
+    HUBSPOT_API_BASE_URL = os.environ.get('HUBSPOT_API_BASE_URL', 'https://api.hubapi.com')
+    HUBSPOT_API_TIMEOUT = int(os.environ.get('HUBSPOT_API_TIMEOUT', 30))
+    HUBSPOT_API_RATE_LIMIT = int(os.environ.get('HUBSPOT_API_RATE_LIMIT', 150))
+    HUBSPOT_RATE_LIMIT_WINDOW_SECONDS = int(os.environ.get('HUBSPOT_RATE_LIMIT_WINDOW_SECONDS', 10))
+    HUBSPOT_API_MAX_RETRIES = int(os.environ.get('HUBSPOT_API_MAX_RETRIES', 3))
+    HUBSPOT_API_RETRY_BACKOFF_SECONDS = float(os.environ.get('HUBSPOT_API_RETRY_BACKOFF_SECONDS', 1))
+    HUBSPOT_PAGE_SIZE = int(os.environ.get('HUBSPOT_PAGE_SIZE', 100))
+    HUBSPOT_TEST_DELAY_SECONDS = float(os.environ.get('HUBSPOT_TEST_DELAY_SECONDS', 0))
+
+    # Validate HUBSPOT_PAGE_SIZE range (1 to 100)
+    if not (1 <= HUBSPOT_PAGE_SIZE <= 100):
+        raise ValueError(f"HUBSPOT_PAGE_SIZE must be between 1 and 100, got {HUBSPOT_PAGE_SIZE}")
+
     # Extraction service settings
-    MAX_CONCURRENT_SCANS = int(os.environ.get('MAX_CONCURRENT_SCANS', 5))
+    CHECKPOINT_EVERY_N_PAGES = int(os.environ.get('CHECKPOINT_EVERY_N_PAGES', 10))
+    MAX_PAGES = int(os.environ.get('MAX_PAGES', 1000))
+    MAX_CONCURRENT_SCANS = int(os.environ.get('MAX_CONCURRENT_SCANS', 3))
     SCAN_TIMEOUT_HOURS = int(os.environ.get('SCAN_TIMEOUT_HOURS', 24))
     CLEANUP_DAYS = int(os.environ.get('CLEANUP_DAYS', 7))
     DEFAULT_BATCH_SIZE = int(os.environ.get('DEFAULT_BATCH_SIZE', 100))

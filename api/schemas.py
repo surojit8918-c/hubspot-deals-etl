@@ -98,12 +98,12 @@ class ScanConfigSchema(Schema):
         error_messages={'required': 'Organization ID is required'}
     )
     type = fields.List(
-        fields.Str(validate=validate.OneOf(['user'])),
+        fields.Str(validate=validate.OneOf(['deal', 'user'])),
         required=True,
         validate=validate.Length(min=1),
         error_messages={
             'required': 'Type is required',
-            'validator_failed': 'Type must contain at least one value and only "user" is supported'
+            'validator_failed': 'Type must contain at least one value and only "deal" (or "user") is supported'
         }
     )
     auth = fields.Nested(

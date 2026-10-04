@@ -30,11 +30,11 @@ def register_models(api: Api):
     filters_model = api.model('Filters', {
         'properties': fields.List(
             fields.String, 
-            description='User properties to extract',
-            example=['id', 'email', 'firstName', 'lastName', 'roleId', 'createdAt']
+            description='Deal properties to extract',
+            example=['dealname', 'amount', 'dealstage', 'pipeline', 'closedate']
         ),
         'includeArchived': fields.Boolean(
-            description='Include archived users',
+            description='Include archived deals',
             default=False,
             example=False
         ),
@@ -46,18 +46,18 @@ def register_models(api: Api):
         'scanId': fields.String(
             required=True, 
             description='Unique identifier for the scan',
-            example='hubspot-users-scan-2025-001'
+            example='hubspot-deals-scan-2026-001'
         ),
         'organizationId': fields.String(
             required=True, 
             description='Organization identifier',
-            example='org-12345'
+            example='test-portal'
         ),
         'type': fields.List(
             fields.String, 
             required=True,
-            description='Type of scan (must be "user")',
-            example=['user']
+            description='Type of scan (must be "deal")',
+            example=['deal']
         ),
         'auth': fields.Nested(auth_model, required=True),
         'filters': fields.Nested(filters_model, description='Scan filters')

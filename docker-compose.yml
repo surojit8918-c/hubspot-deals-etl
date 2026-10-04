@@ -129,18 +129,26 @@ services:
       - DLT_PIPELINE_NAME=hubspot_deals_pipeline_dev
       - DLT_WORKING_DIR=/app/.dlt
       
-      # Hubspot_Deals API Configuration
-      - HUBSPOT_DEALS_API_TIMEOUT=30
-      - HUBSPOT_DEALS_API_RATE_LIMIT=100
+      # HubSpot API Configuration
+      - HUBSPOT_API_BASE_URL=https://api.hubapi.com
+      - HUBSPOT_API_TIMEOUT=30
+      - HUBSPOT_API_RATE_LIMIT=150
+      - HUBSPOT_RATE_LIMIT_WINDOW_SECONDS=10
+      - HUBSPOT_API_MAX_RETRIES=3
+      - HUBSPOT_API_RETRY_BACKOFF_SECONDS=1
+      - HUBSPOT_PAGE_SIZE=100
+      - HUBSPOT_TEST_DELAY_SECONDS=0
       
       # Service Configuration
+      - CHECKPOINT_EVERY_N_PAGES=10
+      - MAX_PAGES=1000
       - MAX_CONCURRENT_SCANS=3
       - SCAN_TIMEOUT_HOURS=24
       - CLEANUP_DAYS=7
       
       # Logging Configuration
       - LOG_LEVEL=DEBUG
-      - LOKI_ENABLED=true
+      - LOKI_ENABLED=false
       - LOG_FORMAT=json
     ports:
       - "5200:5200"

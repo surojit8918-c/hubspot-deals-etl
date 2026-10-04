@@ -163,8 +163,8 @@ class ExtractionService:
                 },
             )
 
-            # Start background task
-            asyncio.create_task(self._execute_scan_with_setup(request_config))
+            # Execute scan setup and extraction
+            await self._execute_scan_with_setup(request_config)
 
             log_business_event(
                 self.logger,
@@ -401,8 +401,8 @@ class ExtractionService:
     async def resume_scan(self, scan_id: str) -> Dict[str, Any]:
         result = self.job_service.resume_job(scan_id)
         if result.get("success"):
-            # Start background execution task
-            asyncio.create_task(self._execute_scan(scan_id))
+            self.job_service.update_job_status(scan_id, JobStatus.RUNNING)
+            await self._execute_scan(scan_id)
         return result
 
     def get_scan_status(self, scan_id: str) -> Optional[Dict[str, Any]]:
