@@ -1,358 +1,195 @@
-# Hubspot_Deals Data Extraction Service
+# 🚀 HubSpot Deals Extraction Service (`hubspot_deals`)
 
-A robust Flask-RESTX API service for extracting Hubspot_Deals data using DLT (Data Load Tool) and PostgreSQL. Features comprehensive Swagger documentation, Docker support, and production-ready deployment.
+A production-ready data extraction and load pipeline built with **Flask**, **DLT (Data Load Tool)**, and **PostgreSQL**. The service extracts deal records from the **HubSpot CRM API v3**, transforms nested property payloads into strongly typed tabular formats, and loads them into PostgreSQL datasets organized per tenant.
 
-## Features
+---
 
-- **Hubspot_Deals API Integration**: Extracts data via Hubspot_Deals REST API
-- **DLT Integration**: Efficient data loading with PostgreSQL destination
-- **Flask-RESTX**: RESTful API with automatic Swagger documentation
-- **Async Processing**: Non-blocking scan operations with real-time status tracking
-- **Multi-Environment Docker**: Separate configurations for dev/staging/prod
-- **Comprehensive Monitoring**: Health checks, logging, and pipeline information
-- **Data Validation**: Robust input validation using Marshmallow schemas
-- **Production Ready**: Gunicorn WSGI server, proper error handling, CORS support
-
-## Project Structure
+## 🏗️ Architecture
 
 ```
-hubspot-deals-extraction/
-├── README.md
-├── docker-compose.yml           # Multi-environment Docker orchestration
-├── Dockerfile.dev              # Development container
-├── Dockerfile.stage            # Staging container
-├── Dockerfile.prod             # Production container
-├── requirements.txt            # Python dependencies
-├── .env.example                # Environment variables template
-├── .gitignore
-├── .dockerignore
-│
-├── app.py                      # Flask application factory
-├── wsgi.py                     # WSGI entry point
-├── config.py                   # Configuration management
-├── loki_logger.py              # Loki logging integration
-├── utils.py                    # Utility functions
-│
-├── api/                        # API layer
-│   ├── __init__.py
-│   ├── routes.py               # Flask-RESTX API routes with Swagger
-│   └── schemas.py              # Marshmallow validation schemas
-│
-├── services/                   # Business logic
-│   ├── __init__.py
-│   ├── extraction_service.py   # Main extraction service with DLT
-│   └── api_service.py          # Hubspot_Deals API client
-│
-├── models/                     # Data models
-│   └── __init__.py
-│
-├── dev_scripts/                # Development utilities
-│   └── __init__.py
-│
-├── docs/                       # Documentation
-│   ├── api.md
-│   └── deployment.md
-│
-└── logs/                       # Application logs
-    └── .gitkeep
+                                  ┌───────────────────────────┐
+                                  │   HubSpot CRM API v3      │
+                                  │ (/crm/v3/objects/deals)   │
+                                  └─────────────▲─────────────┘
+                                                │ HTTPS Bearer Token
+                                                │ (Rate Limited 150/10s)
+ ┌────────────────────────┐       ┌─────────────┴─────────────┐
+ │  Client / System API   │       │                           │
+ │ (REST API / Swagger UI)├──────►│   Flask REST API Service  │
+ └────────────────────────┘       │   (Port 5200 / Port 5201) │
+                                  │                           │
+                                  └─────────────┬─────────────┘
+                                                │ Async DLT Pipeline
+                                                │ (Merge Disposition)
+                                  ┌─────────────▼─────────────┐
+                                  │   PostgreSQL Database     │
+                                  │ (Schema: hubspot_deals_*) │
+                                  └───────────────────────────┘
 ```
 
-## Setup & Installation
+---
 
-### Prerequisites
+## 📋 Features
 
-- Docker & Docker Compose
-- Python 3.11+ (for local development)
-- Hubspot_Deals API Access Token/Credentials
+- **Multi-Tenant Isolation**: Automatically creates dedicated PostgreSQL schemas per tenant (`hubspot_deals_<organization_id>`) with `_tenant_id` defense-in-depth columns.
+- **Resilient API Client**: Thread-safe sliding-window rate limiter (150 requests/10s), exponential backoff with jitter for 5xx/network errors, and `Retry-After` header parsing on HTTP 429.
+- **Checkpointing & Interruption Recovery**: Periodically saves cursor progress and page state so paused or interrupted extraction jobs resume seamlessly without duplicating or wiping data (`write_disposition="merge"`).
+- **Security & Secret Protection**: Access tokens are masked in logs (e.g. `pat-****`), stored encrypted in local state tables, and never exposed via API outputs or committed files.
 
-### Quick Start with Docker
+---
 
-1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   cd hubspot-deals-extraction
-   ```
+## 🛠️ Prerequisites
 
-2. **Set up environment variables**:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your Hubspot_Deals API credentials
-   ```
+- **Python 3.10+** (Python 3.12 supported)
+- **Docker & Docker Compose** (for containerized PostgreSQL and app execution)
+- **HubSpot Developer Test Account** with Private App scope `crm.objects.deals.read`
 
-3. **Start services by environment**:
+---
 
-   **Development Environment (with tools):**
-   ```bash
-   # Start development services with pgAdmin and Redis Commander
-   docker-compose --profile dev up -d
-   
-   # Start core development services only
-   docker-compose up -d
-   ```
+## ⚡ Quick Setup Guide
 
-   **Staging Environment:**
-   ```bash
-   # Start staging services
-   docker-compose --profile stage up -d
-   ```
+### 1. Configure Environment Variables
+Copy `.env.example` to `.env` and add your HubSpot Private App access token:
 
-   **Production Environment:**
-   ```bash
-   # Start production services
-   docker-compose --profile prod up -d
-   ```
-
-4. **Verify the setup**:
-   ```bash
-   # Check service health
-   curl http://localhost:5200/health
-   
-   # View Swagger documentation
-   open http://localhost:5200/docs/
-   
-   # Access development tools (dev profile only)
-   open http://localhost:8080/  # pgAdmin
-   open http://localhost:8081/  # Redis Commander
-   ```
-
-### Local Development Setup
-
-1. **Install Python dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-2. **Set up environment variables**:
-   ```bash
-   export FLASK_ENV=development
-   export FLASK_DEBUG=true
-   export DB_HOST=localhost
-   export DB_PASSWORD=password123
-   export HUBSPOT_DEALS_API_TOKEN="your-token-here"
-   ```
-
-3. **Start PostgreSQL** (using Docker):
-   ```bash
-   docker run -d --name hubspot_deals_postgres \
-     -e POSTGRES_DB=hubspot_deals_data_dev \
-     -e POSTGRES_USER=postgres \
-     -e POSTGRES_PASSWORD=password123 \
-     -p 5432:5432 postgres:15-alpine
-   ```
-
-4. **Run the application**:
-   ```bash
-   python app.py
-   ```
-
-## API Documentation
-
-### Swagger UI
-Access the interactive API documentation at: **http://localhost:5200/docs/**
-
-### Available Endpoints
-
-| Method | Endpoint | Description | Parameters |
-|--------|----------|-------------|------------|
-| `GET` | `/health` | Health check endpoint | None |
-| `GET` | `/stats` | Service statistics | None |
-| `GET` | `/docs/` | Swagger UI documentation | None |
-| `POST` | `/scan/start` | Start a new data extraction scan | Body: scanId, organizationId, type, auth, filters |
-| `GET` | `/scan/{scan_id}/status` | Get scan status | Path: scan_id |
-| `POST` | `/scan/{scan_id}/cancel` | Cancel a running scan | Path: scan_id |
-| `GET` | `/scan/list` | List all scans with pagination | Query: organizationId, limit, offset |
-| `GET` | `/scan/statistics` | Get scan statistics | Query: organizationId |
-| `DELETE` | `/scan/{scan_id}/remove` | Remove scan and data | Path: scan_id |
-| `GET` | `/results/{scan_id}/tables` | Get available tables | Path: scan_id |
-| `GET` | `/results/{scan_id}/result` | Get scan results | Path: scan_id; Query: tableName, limit, offset |
-| `GET` | `/pipeline/info` | Get DLT pipeline info | None |
-| `POST` | `/maintenance/cleanup` | Clean up old scans | Body: daysOld |
-| `POST` | `/maintenance/detect-crashed` | Detect crashed jobs | Query: timeoutMinutes |
-
-### Example API Usage
-
-#### Start a Scan
 ```bash
-curl -X POST http://localhost:5200/api/v1/scan/start \
+cp .env.example .env
+```
+
+Edit `.env`:
+```env
+HUBSPOT_ACCESS_TOKEN=pat-na1-your-actual-private-app-token
+```
+
+> ⚠️ **Security Warning**: Never commit `.env` or share your access token. The `.gitignore` file is configured to exclude `.env`.
+
+### 2. Run with Docker Compose
+
+Start the PostgreSQL database and Flask extraction service:
+
+```bash
+docker compose up -d --build
+```
+
+Verify container status:
+```bash
+docker compose ps
+```
+
+The service will be accessible at:
+- **API Base URL**: `http://localhost:5200`
+- **Swagger Documentation**: `http://localhost:5200/docs/`
+- **Health Check**: `http://localhost:5200/health` or `http://localhost:5200/api/health`
+
+---
+
+## 🔑 HubSpot Access Token Setup
+
+1. Log into your [HubSpot Developer Account](https://developers.hubspot.com/).
+2. Create or navigate to your **Test Account**.
+3. Go to **Settings (gear icon) → Integrations → Private Apps**.
+4. Click **Create a private app** and name it `DLT Deals Extractor`.
+5. Under **Scopes**, enable `crm.objects.deals.read`.
+6. Save the app, copy the Access Token, and paste it into `.env` as `HUBSPOT_ACCESS_TOKEN`.
+
+---
+
+## 📖 API Usage & Example Requests
+
+### 1. Check Service Health
+
+```bash
+curl -X GET http://localhost:5200/health
+```
+
+### 2. Start Extraction Scan
+
+```bash
+curl -X POST http://localhost:5200/api/scan/start \
   -H "Content-Type: application/json" \
   -d '{
     "config": {
-      "scanId": "hubspot-deals-scan-001",
-      "organizationId": "org-12345",
-      "type": ["data"],
+      "scanId": "deals-scan-001",
+      "organizationId": "test-portal",
+      "type": ["deal"],
       "auth": {
-        "accessToken": "your-hubspot-deals-token-here"
+        "accessToken": "pat-na1-xxxx-xxxx-xxxx"
       },
       "filters": {
-        "properties": ["id", "name", "status"],
-        "includeArchived": false
+        "includeArchived": false,
+        "properties": ["dealname", "amount", "dealstage", "pipeline", "closedate"]
       }
     }
   }'
 ```
 
-#### Check Scan Status
-```bash
-curl http://localhost:5200/api/v1/scan/hubspot-deals-scan-001/status
-```
-
-#### List All Scans
-```bash
-curl "http://localhost:5200/api/v1/scan/list?organizationId=org-12345&limit=10"
-```
-
-## Configuration
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `FLASK_ENV` | Flask environment | `development` |
-| `FLASK_DEBUG` | Enable debug mode | `false` |
-| `DB_HOST` | PostgreSQL host | `postgres_dev` |
-| `DB_PORT` | PostgreSQL port | `5432` |
-| `DB_NAME` | Database name | `hubspot_deals_data_dev` |
-| `DB_USER` | Database user | `postgres` |
-| `DB_PASSWORD` | Database password | `password123` |
-| `DB_SCHEMA` | Database schema | `hubspot_deals_dev` |
-| `HUBSPOT_DEALS_API_TOKEN` | Hubspot_Deals API token | `""` |
-| `HUBSPOT_DEALS_API_TIMEOUT` | API timeout seconds | `30` |
-| `HUBSPOT_DEALS_API_RATE_LIMIT` | API rate limit | `100` |
-| `DLT_PIPELINE_NAME` | DLT pipeline name | `hubspot_deals_pipeline_dev` |
-| `MAX_CONCURRENT_SCANS` | Max concurrent scans | `3` |
-| `LOG_LEVEL` | Logging level | `INFO` |
-
-### Multi-Environment Configuration
-
-Each environment has its own configuration:
-
-**Development:**
-- Database: `hubspot_deals_data_dev`
-- Port: `5200`
-- Debug mode enabled
-- Hot reloading
-- Development tools available
-
-**Staging:**
-- Database: `hubspot_deals_data_stage`
-- Port: `5201`
-- Production-like settings
-- Staging-specific logging
-
-**Production:**
-- Database: `hubspot_deals_data_prod`
-- Port: `5202`
-- Optimized performance
-- Production logging
-- Enhanced security
-
-## Development
-
-### Running Tests
-```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=. --cov-report=html
-
-# Run specific test file
-pytest tests/test_api.py -v
-```
-
-### Database Access
-```bash
-# Development database
-docker-compose exec postgres_dev psql -U postgres -d hubspot_deals_data_dev
-
-# View extracted data
-SELECT * FROM hubspot_deals_dev.main_data LIMIT 10;
-```
-
-### Development Tools (Dev Profile)
-- **pgAdmin**: http://localhost:8080 (admin@hubspot-deals.dev / admin123)
-- **Redis Commander**: http://localhost:8081 (admin / admin123)
-
-## Deployment
-
-### Production Deployment
-```bash
-# Build and start production services
-docker-compose --profile prod build
-docker-compose --profile prod up -d
-
-# Check production service
-curl http://localhost:5202/health
-```
-
-### Scaling
-```bash
-# Scale production service
-docker-compose --profile prod up -d --scale hubspot_deals_service_prod=3
-```
-
-### Monitoring
-```bash
-# View logs
-docker-compose logs -f hubspot_deals_service_dev
-
-# Monitor resource usage
-docker stats
-```
-
-## Troubleshooting
-
-### Common Issues
-
-**Service won't start:**
-```bash
-# Check logs
-docker-compose logs hubspot_deals_service_dev
-
-# Restart service
-docker-compose restart hubspot_deals_service_dev
-```
-
-**Database connection issues:**
-```bash
-# Check database status
-docker-compose exec postgres_dev pg_isready -U postgres
-
-# Reset database
-docker-compose down -v
-docker-compose up -d
-```
-
-**Hubspot_Deals API issues:**
-- Verify API token in `.env` file
-- Check Hubspot_Deals API rate limits
-- Validate API endpoint URLs
-
-### Port Conflicts
-If you encounter port conflicts, update the ports in your configuration and rebuild:
+### 3. Check Scan Status
 
 ```bash
-# Check port usage
-netstat -tulpn | grep :5200
-
-# Update configuration and restart
-docker-compose down
-docker-compose up -d
+curl -X GET http://localhost:5200/api/scan/deals-scan-001/status
 ```
 
-## Contributing
+### 4. Pause a Running Scan
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Run the test suite
-6. Submit a pull request
+```bash
+curl -X POST http://localhost:5200/api/scan/deals-scan-001/pause
+```
 
-## License
+### 5. Resume a Paused Scan
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+```bash
+curl -X POST http://localhost:5200/api/scan/deals-scan-001/resume
+```
+
+### 6. Get Extracted Results
+
+```bash
+curl -X GET "http://localhost:5200/api/results/deals-scan-001/result?tableName=hubspot_deals&limit=10"
+```
 
 ---
 
-Generated by DLT Generator - Customized for Hubspot_Deals data extraction
+## 🧪 Testing & Verification
+
+### Running Unit Tests (Pytest)
+
+```bash
+pytest tests/ -v
+```
+
+### Running Live API Check (No Docker required)
+
+Validates token credentials and live pagination directly against HubSpot API:
+
+```bash
+python scripts/live_api_check.py
+```
+
+### Running Full E2E Verification Script
+
+```bash
+# Test local running service
+python scripts/e2e_test.py
+
+# Run in static/no-docker mode
+python scripts/e2e_test.py --no-docker
+```
+
+---
+
+## 🔧 Troubleshooting
+
+| Symptom / Error | Cause | Resolution |
+|---|---|---|
+| `HTTP 401 Unauthorized` | Invalid, expired, or truncated access token | Check `.env` and verify token in HubSpot Private App settings. |
+| `HTTP 403 Forbidden` | Missing scope `crm.objects.deals.read` | Add `crm.objects.deals.read` scope in HubSpot Private App scopes. |
+| `HTTP 429 Too Many Requests` | Exceeded HubSpot rate limit | Service auto-retries with `Retry-After`. Ensure `HUBSPOT_API_RATE_LIMIT=150`. |
+| `PostgreSQL connection error` | Postgres container not ready | Verify `docker compose ps` and wait 10s for healthcheck completion. |
+| `Port 5200 already in use` | Another process using port 5200 | Change `PORT` in `.env` or stop conflicting process. |
+
+---
+
+## 📚 Technical Documentation Links
+
+- 📋 [**API Integration Guide**](docs/api-integration.md): Endpoint specifications, rate limits, error mapping, and deal property definitions.
+- 🗄️ [**Database Schema Design**](docs/database-schema.md): DLT PostgreSQL architecture, `CREATE TABLE` DDL, indexing strategy, and multi-tenant isolation.
+- 📑 [**REST API Documentation**](docs/api-documentation.md): OpenAPI endpoint catalogue, JSON request/response schemas, and example flows.
