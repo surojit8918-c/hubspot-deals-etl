@@ -1,0 +1,24 @@
+=== HubSpot Live API Check ===
+Token loaded: pat-****
+
+--- Step 1a: Validate Credentials ---
+PASS: Credentials valid (HTTP 200)
+
+--- Step 1b & 1c: Fetch All Deals & Transform ---
+Fetched 5 deals in total.
+
+--- Step 1d: Verification Against Expected Test Deals ---
+PASS: Deal ID 352118192850 | Name: 'Acme Starter Package' | Amount: $5000 | Stage: 'qualifiedtobuy'
+PASS: Deal ID 352552945365 | Name: 'Globex Onboarding Project' | Amount: $25000 | Stage: 'presentationscheduled'
+PASS: Deal ID 352552945389 | Name: 'Initech Annual License' | Amount: $50000 | Stage: 'closedwon'
+PASS: Deal ID 352125385452 | Name: 'Umbrella Pilot Program' | Amount: $75000 | Stage: 'closedlost'
+PASS: Deal ID 352125385456 | Name: 'Hooli Enterprise Suite' | Amount: $100000 | Stage: 'contractsent'
+
+--- Step 1e: Pagination Verification (page_size=2) ---
+Page 1: count=2, deal_ids=['352118192850', '352125385452'], next_after='352125385453'
+Page 2: count=2, deal_ids=['352125385456', '352552945365'], next_after='352552945366'
+Page 3: count=1, deal_ids=['352552945389'], next_after='None'
+PASS: Multi-page cursor pagination successful (3 pages fetched for 5 records)
+
+=== Final Status ===
+ALL CHECKS PASSED
