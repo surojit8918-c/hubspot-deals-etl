@@ -1,0 +1,98 @@
+# Git
+.git
+.gitignore
+README.md
+.env
+.env.example
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.pytest_cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Documentation
+docs/
+*.md
+LICENSE
+
+# Testing
+tests/
+.pytest_cache/
+htmlcov/
+
+# Local development
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+venv/
+.venv/
+node_modules/
+
+# DLT
+.dlt/
+*.duckdb
+*.duckdb.wal
+
+# Logs
+logs/
+*.log
+
+# Temporary
+tmp/
+temp/
+.tmp/
+*.tmp
+
+# Backup files
+*.bak
+*.backup
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+Jenkinsfile
+.travis.yml
+.circleci/
+
+# Example and usage files
+usage_example.py
+examples/

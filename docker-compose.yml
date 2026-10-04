@@ -1,0 +1,433 @@
+version: '3.8'
+
+name: Hubspot_Deals DLT Extraction Service
+
+services:
+  # PostgreSQL database for Development
+  postgres_dev:
+    image: postgres:15-alpine
+    container_name: hubspot_deals_postgres_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hubspot_deals_data_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - hubspot_deals_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hubspot_deals_data_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  # PostgreSQL database for Staging
+  postgres_stage:
+    image: postgres:15-alpine
+    container_name: hubspot_deals_postgres_stage
+    restart: unless-stopped
+    profiles: ["stage"]
+    environment:
+      POSTGRES_DB: hubspot_deals_data_stage
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data_stage:/var/lib/postgresql/data
+    networks:
+      - hubspot_deals_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hubspot_deals_data_stage"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.8'
+
+  # PostgreSQL database for Production
+  postgres_prod:
+    image: postgres:15-alpine
+    container_name: hubspot_deals_postgres_prod
+    restart: unless-stopped
+    profiles: ["prod"]
+    environment:
+      POSTGRES_DB: hubspot_deals_data_prod
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    networks:
+      - hubspot_deals_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hubspot_deals_data_prod"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+
+  # Hubspot_Deals Data Extraction Service - Development
+  hubspot_deals_service_dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    container_name: hubspot_deals_service_dev
+    restart: unless-stopped
+    environment:
+      # Flask Configuration
+      - APP_VERSION=1.0.0
+      - APP_TITLE=Hubspot_Deals
+      - APP_DESCRIPTION=Service for extracting and loading data using DLT
+
+      - FLASK_ENV=development
+      - FLASK_DEBUG=true
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - PORT=5200
+      - HOST=0.0.0.0
+      
+      # Database Configuration
+      - DB_HOST=postgres_dev
+      - DB_PORT=5432
+      - DB_NAME=hubspot_deals_data_dev
+      - DB_USER=postgres
+      - DB_PASSWORD=password123
+      - DB_SCHEMA=hubspot_deals_dev
+      
+      # DLT PostgreSQL destination configuration (required by DLT)
+      - DESTINATION__POSTGRES__CREDENTIALS__DATABASE=hubspot_deals_data_dev
+      - DESTINATION__POSTGRES__CREDENTIALS__USERNAME=postgres
+      - DESTINATION__POSTGRES__CREDENTIALS__PASSWORD=password123
+      - DESTINATION__POSTGRES__CREDENTIALS__HOST=postgres_dev
+      - DESTINATION__POSTGRES__CREDENTIALS__PORT=5432
+      
+      # DLT Configuration
+      - DLT_PIPELINE_NAME=hubspot_deals_pipeline_dev
+      - DLT_WORKING_DIR=/app/.dlt
+      
+      # Hubspot_Deals API Configuration
+      - HUBSPOT_DEALS_API_TIMEOUT=30
+      - HUBSPOT_DEALS_API_RATE_LIMIT=100
+      
+      # Service Configuration
+      - MAX_CONCURRENT_SCANS=3
+      - SCAN_TIMEOUT_HOURS=24
+      - CLEANUP_DAYS=7
+      
+      # Logging Configuration
+      - LOG_LEVEL=DEBUG
+      - LOKI_ENABLED=true
+      - LOG_FORMAT=json
+    ports:
+      - "5200:5200"
+    volumes:
+      # Mount source code for development
+      - .:/app:cached
+      # Persistent DLT data
+      - dlt_data_dev:/app/.dlt
+      # Logs directory - bind mount for easy access in dev
+      - ./logs:/app/logs
+    depends_on:
+      postgres_dev:
+        condition: service_healthy
+    networks:
+      - hubspot_deals_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5200/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+
+  # Hubspot_Deals Data Extraction Service - Staging
+  hubspot_deals_service_stage:
+    build:
+      context: .
+      dockerfile: Dockerfile.stage
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    container_name: hubspot_deals_service_stage
+    restart: unless-stopped
+    profiles: ["stage"]
+    environment:
+      - APP_VERSION=1.0.0
+      - APP_TITLE=Hubspot_Deals
+      - APP_DESCRIPTION=Service for extracting and loading data using DLT
+      # Flask Configuration
+      - FLASK_ENV=staging
+      - FLASK_DEBUG=false
+      - SECRET_KEY=stage-secret-key-change-in-production
+      - PORT=5201
+      - HOST=0.0.0.0
+      
+      # Database Configuration
+      - DB_HOST=postgres_stage
+      - DB_PORT=5432
+      - DB_NAME=hubspot_deals_data_stage
+      - DB_USER=postgres
+      - DB_PASSWORD=password123
+      - DB_SCHEMA=hubspot_deals_stage
+      
+      # DLT PostgreSQL destination configuration (required by DLT)
+      - DESTINATION__POSTGRES__CREDENTIALS__DATABASE=hubspot_deals_data_stage
+      - DESTINATION__POSTGRES__CREDENTIALS__USERNAME=postgres
+      - DESTINATION__POSTGRES__CREDENTIALS__PASSWORD=password123
+      - DESTINATION__POSTGRES__CREDENTIALS__HOST=postgres_stage
+      - DESTINATION__POSTGRES__CREDENTIALS__PORT=5432
+      
+      # DLT Configuration
+      - DLT_PIPELINE_NAME=hubspot_deals_pipeline_stage
+      - DLT_WORKING_DIR=/app/.dlt
+      
+      # Hubspot_Deals API Configuration
+      - HUBSPOT_DEALS_API_TIMEOUT=45
+      - HUBSPOT_DEALS_API_RATE_LIMIT=200
+      
+      # Service Configuration
+      - MAX_CONCURRENT_SCANS=5
+      - SCAN_TIMEOUT_HOURS=48
+      - CLEANUP_DAYS=14
+      
+      # Logging Configuration
+      - LOG_LEVEL=INFO
+      - LOKI_ENABLED=true
+      - LOG_FORMAT=json
+    ports:
+      - "5201:5201"
+    volumes:
+      # Persistent DLT data
+      - dlt_data_stage:/app/.dlt
+      # Logs directory - Docker volume for persistence
+      - logs_data_stage:/app/logs
+    depends_on:
+      postgres_stage:
+        condition: service_healthy
+    networks:
+      - hubspot_deals_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5201/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+
+  # Hubspot_Deals Data Extraction Service - Production
+  hubspot_deals_service_prod:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    container_name: hubspot_deals_service_prod
+    restart: unless-stopped
+    profiles: ["prod"]
+    environment:
+      - APP_VERSION=1.0.0
+      - APP_TITLE=Hubspot_Deals
+      - APP_DESCRIPTION=Service for extracting and loading data using DLT
+      
+
+      # Flask Configuration
+      - FLASK_ENV=production
+      - FLASK_DEBUG=false
+      - SECRET_KEY=prod-secret-key-change-in-production
+      - PORT=5202
+      - HOST=0.0.0.0
+      
+      # Database Configuration
+      - DB_HOST=postgres_prod
+      - DB_PORT=5432
+      - DB_NAME=hubspot_deals_data_prod
+      - DB_USER=postgres
+      - DB_PASSWORD=password123
+      - DB_SCHEMA=hubspot_deals_prod
+      
+      # DLT PostgreSQL destination configuration (required by DLT)
+      - DESTINATION__POSTGRES__CREDENTIALS__DATABASE=hubspot_deals_data_prod
+      - DESTINATION__POSTGRES__CREDENTIALS__USERNAME=postgres
+      - DESTINATION__POSTGRES__CREDENTIALS__PASSWORD=password123
+      - DESTINATION__POSTGRES__CREDENTIALS__HOST=postgres_prod
+      - DESTINATION__POSTGRES__CREDENTIALS__PORT=5432
+      
+      # DLT Configuration
+      - DLT_PIPELINE_NAME=hubspot_deals_pipeline_prod
+      - DLT_WORKING_DIR=/app/.dlt
+      
+      # Hubspot_Deals API Configuration
+      - HUBSPOT_DEALS_API_TIMEOUT=60
+      - HUBSPOT_DEALS_API_RATE_LIMIT=300
+      
+      # Service Configuration
+      - MAX_CONCURRENT_SCANS=10
+      - SCAN_TIMEOUT_HOURS=72
+      - CLEANUP_DAYS=30
+      
+      # Logging Configuration
+      - LOG_LEVEL=WARNING
+      - LOKI_ENABLED=true
+      - LOG_FORMAT=json
+    ports:
+      - "5202:5202"
+    volumes:
+      # Persistent DLT data
+      - dlt_data_prod:/app/.dlt
+      # Logs directory - Docker volume for persistence
+      - logs_data_prod:/app/logs
+    depends_on:
+      postgres_prod:
+        condition: service_healthy
+    networks:
+      - hubspot_deals_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5202/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+
+  # Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    container_name: hubspot_deals_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis123
+    environment:
+      - REDIS_PASSWORD=redis123
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - hubspot_deals_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.2'
+
+  # Development Tools (only for dev profile)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: hubspot_deals_pgadmin
+    profiles: ["dev"]
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@hubspot-deals.dev
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres_dev:
+        condition: service_healthy
+    networks:
+      - hubspot_deals_network
+
+  # Redis Commander for Redis management (dev only)
+  redis_commander:
+    image: rediscommander/redis-commander:latest
+    container_name: hubspot_deals_redis_commander
+    profiles: ["dev"]
+    restart: unless-stopped
+    environment:
+      - REDIS_HOSTS=local:hubspot_deals_redis:6379:0:redis123
+      - HTTP_USER=admin
+      - HTTP_PASSWORD=admin123
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - hubspot_deals_network
+
+volumes:
+  postgres_data_dev:
+    name: hubspot_deals_postgres_data_dev
+    driver: local
+  
+  postgres_data_stage:
+    name: hubspot_deals_postgres_data_stage
+    driver: local
+  
+  postgres_data_prod:
+    name: hubspot_deals_postgres_data_prod
+    driver: local
+  
+  dlt_data_dev:
+    name: hubspot_deals_dlt_data_dev
+    driver: local
+  
+  dlt_data_stage:
+    name: hubspot_deals_dlt_data_stage
+    driver: local
+  
+  dlt_data_prod:
+    name: hubspot_deals_dlt_data_prod
+    driver: local
+  
+  logs_data_stage:
+    name: hubspot_deals_logs_data_stage
+    driver: local
+  
+  logs_data_prod:
+    name: hubspot_deals_logs_data_prod
+    driver: local
+  
+  redis_data:
+    name: hubspot_deals_redis_data
+    driver: local
+
+  pgadmin_data:
+    name: hubspot_deals_pgadmin_data
+    driver: local
+
+networks:
+  hubspot_deals_network:
+    name: hubspot_deals_network
+    driver: bridge
