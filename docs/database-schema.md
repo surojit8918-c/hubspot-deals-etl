@@ -69,11 +69,12 @@ The target schema for extracted HubSpot deals data in PostgreSQL.
 |--------------|------------------------|-----------|
 | String / ID | `TEXT` | Flexible text storage |
 | Enumeration | `TEXT` | Stage/pipeline codes stored as string IDs |
-| Number (Currency/Amount) | `NUMERIC(18,2)` | Exact decimal representation avoiding float rounding errors |
+| Number (Currency/Amount) | `NUMERIC(38,9)` | DLT default PostgreSQL decimal mapping ensuring precision |
 | Datetime | `TIMESTAMPTZ` | Timezone-aware UTC timestamp parsing ISO 8601 (`Z`) |
 | Date | `DATE` | Calendar dates |
 | Boolean | `BOOLEAN` | Native boolean flags |
-| Metadata / ID | `TEXT PRIMARY KEY` | HubSpot object record ID |
+| Record ID | `TEXT` | HubSpot object record ID (Logical Primary Key for DLT `merge`) |
+| System ID | `TEXT UNIQUE` | DLT internal record hash (`_dlt_id`) with UNIQUE constraint |
 
 #### Target DDL Statement (`hubspot_deals_<tenant>.hubspot_deals`)
 
@@ -81,9 +82,9 @@ The target schema for extracted HubSpot deals data in PostgreSQL.
 CREATE SCHEMA IF NOT EXISTS hubspot_deals_<tenant>;
 
 CREATE TABLE hubspot_deals_<tenant>.hubspot_deals (
-    id                    TEXT PRIMARY KEY,           -- HubSpot record object ID
+    id                    TEXT,                       -- HubSpot record object ID (Logical Primary Key for DLT merge)
     dealname              TEXT,                       -- Deal Name
-    amount                NUMERIC(18,2),              -- Total deal value
+    amount                NUMERIC(38,9),              -- Total deal value (DLT default numeric format)
     dealstage             TEXT,                       -- Stage internal code
     pipeline              TEXT,                       -- Pipeline ID (e.g. 'default')
     closedate             TIMESTAMPTZ,                -- Close date
@@ -104,7 +105,7 @@ CREATE TABLE hubspot_deals_<tenant>.hubspot_deals (
     _page_number          INTEGER,                    -- Page index during fetch
     _source_service       TEXT,                       -- Service tag ('hubspot_deals')
     _dlt_load_id          TEXT NOT NULL,              -- System load ID added by DLT
-    _dlt_id               TEXT NOT NULL               -- Internal record hash added by DLT
+    _dlt_id               TEXT NOT NULL UNIQUE        -- Internal record hash added by DLT with UNIQUE constraint
 );
 ```
 
@@ -128,12 +129,14 @@ Every record loaded into PostgreSQL includes five standard ETL lineage fields:
 
 ## ⚡ Write Disposition: `merge`
 
-The service uses **DLT `merge` disposition** keyed on `primary_key="id"` (HubSpot record ID).
+The service uses **DLT `merge` disposition** configured with `primary_key="id"` (HubSpot record ID).
 
-### Why `merge` was selected over `replace` or `append`:
+### How DLT `merge` operates in PostgreSQL:
+- DLT uses `id` as a **logical primary key** during staging and upsert execution.
+- DLT automatically generates a `UNIQUE` constraint index on `_dlt_id` (`hubspot_deals__dlt_id_key`).
 - **`replace`**: Overwrites the entire table on every run. If a job pauses halfway, resuming with `replace` would wipe previously extracted pages, resulting in total data loss.
 - **`append`**: Inserts duplicate rows if a scan is restarted or resumed after a crash.
-- **`merge`**: Performs an atomic **UPSERT** (`INSERT ... ON CONFLICT (id) DO UPDATE`). If a job is resumed or re-run, existing deals are updated in place while new deals are inserted cleanly.
+- **`merge`**: Performs an atomic **UPSERT** (`INSERT ... ON CONFLICT / DELETE+INSERT` using staging tables). If a job is resumed or re-run, existing deals are updated in place while new deals are inserted cleanly.
 
 ---
 
@@ -147,6 +150,8 @@ The service uses **DLT `merge` disposition** keyed on `primary_key="id"` (HubSpo
 ---
 
 ## ⚡ Performance Indexes & Rationale
+
+DLT automatically creates a UNIQUE index on `_dlt_id`. Following a successful load, the service executes post-load `CREATE INDEX IF NOT EXISTS` statements to build performance indexes on top of the dataset table:
 
 ```sql
 -- Single column index on tenant marker (defense in depth queries)

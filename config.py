@@ -112,7 +112,7 @@ class Config:
     HEALTH_CHECK_CACHE = True
     
     # API-specific settings
-    API_DOCS_PATH = '/docs'
+    API_DOCS_PATH = '/docs/'
     API_DOCS_ENABLED = True
     API_PREFIX = '/api'
     

@@ -332,6 +332,9 @@ class ExtractionService:
 
             pipeline.run(source_functions)
 
+            # Post-load performance indexing (never fails the job)
+            self._create_performance_indexes(pipeline, dataset_name)
+
             # Get final record count
             latest_checkpoint = self.job_service.get_latest_checkpoint(job_id)
             records_extracted = (
@@ -357,8 +360,6 @@ class ExtractionService:
                 return  # Don't mark as completed
             
             # Only complete if not cancelled
-            self.job_service.complete_job(job_id, records_extracted, metadata)
-
             self.job_service.complete_job(job_id, records_extracted, metadata)
 
             self.logger.info(
@@ -394,6 +395,40 @@ class ExtractionService:
             self.job_service.fail_job(job_id, str(e), error_metadata)
 
             log_business_event(self.logger, "scan_failed", job_id=job_id, error=str(e))
+
+    def _create_performance_indexes(self, pipeline, dataset_name: str):
+        """
+        Create database performance indexes after load in a try/except block
+        so that index creation errors never fail the job.
+        """
+        try:
+            index_statements = [
+                f"CREATE INDEX IF NOT EXISTS idx_hubspot_deals_tenant ON {dataset_name}.hubspot_deals (_tenant_id);",
+                f"CREATE INDEX IF NOT EXISTS idx_hubspot_deals_stage ON {dataset_name}.hubspot_deals (dealstage);",
+                f"CREATE INDEX IF NOT EXISTS idx_hubspot_deals_closedate ON {dataset_name}.hubspot_deals (closedate);",
+                f"CREATE INDEX IF NOT EXISTS idx_hubspot_deals_createdate ON {dataset_name}.hubspot_deals (createdate);",
+                f"CREATE INDEX IF NOT EXISTS idx_hubspot_deals_stage_close ON {dataset_name}.hubspot_deals (dealstage, closedate);",
+                f"CREATE INDEX IF NOT EXISTS idx_hubspot_deals_scan_id ON {dataset_name}.hubspot_deals (_scan_id);",
+                f"CREATE INDEX IF NOT EXISTS idx_hubspot_deals_lastmodified ON {dataset_name}.hubspot_deals (hs_lastmodifieddate);",
+            ]
+            with pipeline.sql_client() as client:
+                for stmt in index_statements:
+                    try:
+                        client.execute_sql(stmt)
+                    except Exception as idx_err:
+                        self.logger.warning(
+                            f"Index creation statement skipped or failed ({stmt}): {idx_err}",
+                            extra={"operation": "create_performance_indexes", "dataset": dataset_name},
+                        )
+            self.logger.info(
+                "Performance indexes created/verified successfully",
+                extra={"operation": "create_performance_indexes", "dataset": dataset_name},
+            )
+        except Exception as e:
+            self.logger.warning(
+                f"Failed to run post-load index creation on dataset {dataset_name}: {e}",
+                extra={"operation": "create_performance_indexes", "dataset": dataset_name},
+            )
 
     def pause_scan(self, scan_id: str) -> Dict[str, Any]:
         return self.job_service.pause_job(scan_id)
