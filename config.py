@@ -153,13 +153,14 @@ class Config:
             'default_batch_size': cls.DEFAULT_BATCH_SIZE,
             
             # External API configuration
-            'api_base_url': cls.API_BASE_URL,
-            'api_timeout': cls.API_TIMEOUT,
-            'api_rate_limit': cls.API_RATE_LIMIT,
-            'api_users_endpoint': cls.API_USERS_ENDPOINT,
-            'api_teams_endpoint': cls.API_TEAMS_ENDPOINT,
-            'api_retry_attempts': cls.API_RETRY_ATTEMPTS,
-            'api_retry_delay': cls.API_RETRY_DELAY,
+            'api_base_url': cls.HUBSPOT_API_BASE_URL,
+            'api_timeout': cls.HUBSPOT_API_TIMEOUT,
+            'api_rate_limit': cls.HUBSPOT_API_RATE_LIMIT,
+            'rate_limit_window_seconds': cls.HUBSPOT_RATE_LIMIT_WINDOW_SECONDS,
+            'api_max_retries': cls.HUBSPOT_API_MAX_RETRIES,
+            'api_retry_backoff_seconds': cls.HUBSPOT_API_RETRY_BACKOFF_SECONDS,
+            'page_size': cls.HUBSPOT_PAGE_SIZE,
+            'test_delay_seconds': cls.HUBSPOT_TEST_DELAY_SECONDS,
             
             # Cache configuration
             'cache_enabled': cls.CACHE_ENABLED,
@@ -190,12 +191,12 @@ class Config:
             },
             'sources': {
                 'data_source': {
-                    'base_url': cls.API_BASE_URL,
-                    'users_endpoint': cls.API_USERS_ENDPOINT,
-                    'teams_endpoint': cls.API_TEAMS_ENDPOINT,
+                    'base_url': cls.HUBSPOT_API_BASE_URL,
                     'batch_size': cls.DEFAULT_BATCH_SIZE,
-                    'timeout': cls.API_TIMEOUT,
-                    'retry_attempts': cls.API_RETRY_ATTEMPTS
+                    'timeout': cls.HUBSPOT_API_TIMEOUT,
+                    'max_retries': cls.HUBSPOT_API_MAX_RETRIES,
+                    'backoff_seconds': cls.HUBSPOT_API_RETRY_BACKOFF_SECONDS,
+                    'page_size': cls.HUBSPOT_PAGE_SIZE
                 }
             }
         }
@@ -269,16 +270,17 @@ class Config:
             'docs_path': cls.API_DOCS_PATH,
             'docs_enabled': cls.API_DOCS_ENABLED,
             'prefix': cls.API_PREFIX,
-            'api_base_url': cls.API_BASE_URL,
-            'api_timeout': cls.API_TIMEOUT,
-            'api_rate_limit': cls.API_RATE_LIMIT,
-            'users_endpoint': cls.API_USERS_ENDPOINT,
-            'teams_endpoint': cls.API_TEAMS_ENDPOINT,
-            'retry_attempts': cls.API_RETRY_ATTEMPTS,
-            'retry_delay': cls.API_RETRY_DELAY,
+            'api_base_url': cls.HUBSPOT_API_BASE_URL,
+            'api_timeout': cls.HUBSPOT_API_TIMEOUT,
+            'api_rate_limit': cls.HUBSPOT_API_RATE_LIMIT,
+            'rate_limit_window_seconds': cls.HUBSPOT_RATE_LIMIT_WINDOW_SECONDS,
+            'api_max_retries': cls.HUBSPOT_API_MAX_RETRIES,
+            'api_retry_backoff_seconds': cls.HUBSPOT_API_RETRY_BACKOFF_SECONDS,
+            'page_size': cls.HUBSPOT_PAGE_SIZE,
+            'test_delay_seconds': cls.HUBSPOT_TEST_DELAY_SECONDS,
             "max_scan_list_limit": 100,      # Max number of scans to return per page
             "default_scan_list_limit": 20,   # Default number of scans to return per page
-            "max_results_limit": 500,        # Max number of scan results (users) per page
+            "max_results_limit": 500,        # Max number of scan results per page
             "default_results_limit": 100,    # Default number of results per page            
             # Maintenance and job detection
             "crash_detection_timeout": 10,   # Timeout in minutes to detect crashed jobs

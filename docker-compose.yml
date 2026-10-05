@@ -216,9 +216,9 @@ services:
       - DLT_PIPELINE_NAME=hubspot_deals_pipeline_stage
       - DLT_WORKING_DIR=/app/.dlt
       
-      # Hubspot_Deals API Configuration
-      - HUBSPOT_DEALS_API_TIMEOUT=45
-      - HUBSPOT_DEALS_API_RATE_LIMIT=200
+      # HubSpot API Configuration
+      - HUBSPOT_API_TIMEOUT=45
+      - HUBSPOT_API_RATE_LIMIT=200
       
       # Service Configuration
       - MAX_CONCURRENT_SCANS=5
@@ -295,9 +295,9 @@ services:
       - DLT_PIPELINE_NAME=hubspot_deals_pipeline_prod
       - DLT_WORKING_DIR=/app/.dlt
       
-      # Hubspot_Deals API Configuration
-      - HUBSPOT_DEALS_API_TIMEOUT=60
-      - HUBSPOT_DEALS_API_RATE_LIMIT=300
+      # HubSpot API Configuration
+      - HUBSPOT_API_TIMEOUT=60
+      - HUBSPOT_API_RATE_LIMIT=300
       
       # Service Configuration
       - MAX_CONCURRENT_SCANS=10

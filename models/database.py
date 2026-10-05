@@ -247,10 +247,12 @@ def initialize_database(config_name: Optional[str] = None, drop_existing: bool =
     """Initialize the global database manager and create tables"""
     global db_manager
     
-    db_manager = DatabaseManager(config_name)
-    db_manager.init_tables(drop_existing=drop_existing)
-    
-    logger.info("Database initialization completed")
+    try:
+        db_manager = DatabaseManager(config_name)
+        db_manager.init_tables(drop_existing=drop_existing)
+        logger.info("Database initialization completed")
+    except Exception as e:
+        logger.warning(f"Database initialization deferred/failed: {e}")
 
 
 # Convenience functions

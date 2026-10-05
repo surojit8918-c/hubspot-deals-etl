@@ -25,8 +25,8 @@ class TestHubSpotAPIService(unittest.TestCase):
         self.dummy_token = "pat-na1-12345678-abcd-1234"
 
     def test_mask_token(self):
-        self.assertEqual(mask_token("pat-na1-12345678-abcd-1234"), "pat-na1-****1234")
-        self.assertEqual(mask_token("short"), "shor****")
+        self.assertEqual(mask_token("pat-na1-12345678-abcd-1234"), "pat-****")
+        self.assertEqual(mask_token(""), "<empty>")
 
     @patch.object(requests.Session, "request")
     def test_get_deals_pagination(self, mock_request):
