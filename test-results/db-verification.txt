@@ -1,0 +1,64 @@
+﻿Run at: 2026-10-05T16:43:12.0034627+05:30
+                    List of schemas
+               Name                |       Owner       
+-----------------------------------+-------------------
+ hubspot_deals_test_portal         | postgres
+ hubspot_deals_test_portal_staging | postgres
+ public                            | pg_database_owner
+(3 rows)
+
+      id      |         dealname          |      amount      |       dealstage       |         closedate          |     dealtype     |                description                 | _tenant_id  |    _scan_id    |         _extracted_at         
+--------------+---------------------------+------------------+-----------------------+----------------------------+------------------+--------------------------------------------+-------------+----------------+-------------------------------
+ 352118192850 | Acme Starter Package      |   5000.000000000 | qualifiedtobuy        | 2026-11-06 13:33:49.101+00 | newbusiness      | Small starter bundle for Acme Corp         | test-portal | deals-test-001 | 2026-10-05 11:08:39.469753+00
+ 352552945365 | Globex Onboarding Project |  25000.000000000 | presentationscheduled | 2026-11-21 13:45:07.813+00 | newbusiness      | Onboarding and training project for Globex | test-portal | deals-test-001 | 2026-10-05 11:08:39.469753+00
+ 352552945389 | Initech Annual License    |  50000.000000000 | closedwon             | 2026-09-21 13:53:52.486+00 | existingbusiness | Annual license renewal, signed             | test-portal | deals-test-001 | 2026-10-05 11:08:39.469753+00
+ 352125385452 | Umbrella Pilot Program    |  75000.000000000 | closedlost            | 2026-09-29 13:55:51.181+00 | newbusiness      | Pilot lost to competitor on price          | test-portal | deals-test-001 | 2026-10-05 11:08:39.469753+00
+ 352125385456 | Hooli Enterprise Suite    | 100000.000000000 | contractsent          | 2026-10-25 13:57:53.118+00 | newbusiness      | Enterprise suite, contract under review    | test-portal | deals-test-001 | 2026-10-05 11:08:39.469753+00
+(5 rows)
+
+                 Table "hubspot_deals_test_portal.hubspot_deals"
+       Column        |           Type           | Collation | Nullable | Default 
+---------------------+--------------------------+-----------+----------+---------
+ id                  | character varying        |           | not null | 
+ dealname            | character varying        |           |          | 
+ amount              | numeric(38,9)            |           |          | 
+ dealstage           | character varying        |           |          | 
+ pipeline            | character varying        |           |          | 
+ closedate           | timestamp with time zone |           |          | 
+ createdate          | timestamp with time zone |           |          | 
+ hs_lastmodifieddate | timestamp with time zone |           |          | 
+ description         | character varying        |           |          | 
+ dealtype            | character varying        |           |          | 
+ hubspot_owner_id    | character varying        |           |          | 
+ hs_priority         | character varying        |           |          | 
+ hs_is_closed        | boolean                  |           |          | 
+ hs_is_closed_won    | boolean                  |           |          | 
+ created_at          | timestamp with time zone |           |          | 
+ updated_at          | timestamp with time zone |           |          | 
+ archived            | boolean                  |           |          | 
+ _extracted_at       | timestamp with time zone |           |          | 
+ _scan_id            | character varying        |           |          | 
+ _tenant_id          | character varying        |           |          | 
+ _page_number        | bigint                   |           |          | 
+ _source_service     | character varying        |           |          | 
+ _dlt_load_id        | character varying        |           | not null | 
+ _dlt_id             | character varying        |           | not null | 
+Indexes:
+    "hubspot_deals__dlt_id_key" UNIQUE CONSTRAINT, btree (_dlt_id)
+    "idx_hubspot_deals_closedate" btree (closedate)
+    "idx_hubspot_deals_createdate" btree (createdate)
+    "idx_hubspot_deals_lastmodified" btree (hs_lastmodifieddate)
+    "idx_hubspot_deals_scan_id" btree (_scan_id)
+    "idx_hubspot_deals_stage" btree (dealstage)
+    "idx_hubspot_deals_stage_close" btree (dealstage, closedate)
+    "idx_hubspot_deals_tenant" btree (_tenant_id)
+
+       dealstage       | count |       sum        
+-----------------------+-------+------------------
+ presentationscheduled |     1 |  25000.000000000
+ contractsent          |     1 | 100000.000000000
+ qualifiedtobuy        |     1 |   5000.000000000
+ closedwon             |     1 |  50000.000000000
+ closedlost            |     1 |  75000.000000000
+(5 rows)
+

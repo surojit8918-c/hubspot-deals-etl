@@ -4,9 +4,114 @@
     "organizationId": "test-portal",
     "type": "deal",
     "status": "running",
-    "startTime": "2026-10-05T04:55:10.491424+00:00",
+    "startTime": "2026-10-05T11:08:26.865948+00:00",
     "endTime": null,
-    "lastHeartbeat": "2026-10-05T04:55:11.483630+00:00",
+    "lastHeartbeat": "2026-10-05T11:08:26.958827+00:00",
+    "recordsExtracted": 0,
+    "errorMessage": null,
+    "config": {
+      "auth": "REDACTED_ENCRYPTED_AUTH",
+      "filters": {
+        "includeArchived": false
+      },
+      "type": [
+        "deal"
+      ]
+    },
+    "metadata": null
+  },
+  {
+    "scanId": "deals-test-001",
+    "organizationId": "test-portal",
+    "type": "deal",
+    "status": "running",
+    "startTime": "2026-10-05T11:08:26.865948+00:00",
+    "endTime": null,
+    "lastHeartbeat": "2026-10-05T11:08:26.958827+00:00",
+    "recordsExtracted": 0,
+    "errorMessage": null,
+    "config": {
+      "auth": "REDACTED_ENCRYPTED_AUTH",
+      "filters": {
+        "includeArchived": false
+      },
+      "type": [
+        "deal"
+      ]
+    },
+    "metadata": null
+  },
+  {
+    "scanId": "deals-test-001",
+    "organizationId": "test-portal",
+    "type": "deal",
+    "status": "running",
+    "startTime": "2026-10-05T11:08:26.865948+00:00",
+    "endTime": null,
+    "lastHeartbeat": "2026-10-05T11:08:26.958827+00:00",
+    "recordsExtracted": 0,
+    "errorMessage": null,
+    "config": {
+      "auth": "REDACTED_ENCRYPTED_AUTH",
+      "filters": {
+        "includeArchived": false
+      },
+      "type": [
+        "deal"
+      ]
+    },
+    "metadata": null
+  },
+  {
+    "scanId": "deals-test-001",
+    "organizationId": "test-portal",
+    "type": "deal",
+    "status": "running",
+    "startTime": "2026-10-05T11:08:26.865948+00:00",
+    "endTime": null,
+    "lastHeartbeat": "2026-10-05T11:08:26.958827+00:00",
+    "recordsExtracted": 0,
+    "errorMessage": null,
+    "config": {
+      "auth": "REDACTED_ENCRYPTED_AUTH",
+      "filters": {
+        "includeArchived": false
+      },
+      "type": [
+        "deal"
+      ]
+    },
+    "metadata": null
+  },
+  {
+    "scanId": "deals-test-001",
+    "organizationId": "test-portal",
+    "type": "deal",
+    "status": "running",
+    "startTime": "2026-10-05T11:08:26.865948+00:00",
+    "endTime": null,
+    "lastHeartbeat": "2026-10-05T11:08:26.958827+00:00",
+    "recordsExtracted": 0,
+    "errorMessage": null,
+    "config": {
+      "auth": "REDACTED_ENCRYPTED_AUTH",
+      "filters": {
+        "includeArchived": false
+      },
+      "type": [
+        "deal"
+      ]
+    },
+    "metadata": null
+  },
+  {
+    "scanId": "deals-test-001",
+    "organizationId": "test-portal",
+    "type": "deal",
+    "status": "running",
+    "startTime": "2026-10-05T11:08:26.865948+00:00",
+    "endTime": null,
+    "lastHeartbeat": "2026-10-05T11:08:37.287864+00:00",
     "recordsExtracted": 0,
     "errorMessage": null,
     "config": {
@@ -25,9 +130,9 @@
     "organizationId": "test-portal",
     "type": "deal",
     "status": "completed",
-    "startTime": "2026-10-05T04:55:10.491424+00:00",
-    "endTime": "2026-10-05T04:55:13.758347+00:00",
-    "lastHeartbeat": "2026-10-05T04:55:13.135446+00:00",
+    "startTime": "2026-10-05T11:08:26.865948+00:00",
+    "endTime": "2026-10-05T11:08:40.472400+00:00",
+    "lastHeartbeat": "2026-10-05T11:08:39.692464+00:00",
     "recordsExtracted": 5,
     "errorMessage": null,
     "config": {
@@ -47,14 +152,14 @@
       "extraction_summary": {
         "total_records": 5
       },
-      "completed_at": "2026-10-05T04:55:13.686814+00:00"
+      "completed_at": "2026-10-05T11:08:40.429546+00:00"
     },
-    "duration": 3.266923,
+    "duration": 13.606452,
     "checkpointInfo": {
       "latestCheckpoint": {
-        "id": 2,
+        "id": 3,
         "job_id": "deals-test-001",
-        "createdAt": "2026-10-05T04:55:13.108885+00:00",
+        "createdAt": "2026-10-05T11:08:39.654135+00:00",
         "phase": "main_data_completed",
         "recordsProcessed": 5,
         "totalEstimated": null,
@@ -71,7 +176,7 @@
         "progress_percentage": null
       },
       "progress": null,
-      "lastCheckpointAt": "2026-10-05T04:55:13.108885+00:00"
+      "lastCheckpointAt": "2026-10-05T11:08:39.654135+00:00"
     }
   }
 ]

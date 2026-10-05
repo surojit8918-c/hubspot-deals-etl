@@ -5,7 +5,7 @@ Payload: {
       "database": "hubspot_deals_data_dev",
       "healthy": true,
       "host": "postgres_dev",
-      "timestamp": 1791176110.1500149
+      "timestamp": 1791198506.3776479
     },
     "destination_type": "postgres",
     "pipeline_name": "hubspot_deals_extraction",
@@ -14,14 +14,14 @@ Payload: {
   },
   "service": "hubspot_deals_pipeline_dev",
   "status": "healthy",
-  "timestamp": "2026-10-05T04:55:10.161952"
+  "timestamp": "2026-10-05T11:08:26.409809"
 }
 
 
 /api/health status: 200
 Payload: {
     "status": "healthy",
-    "timestamp": "2026-10-05T04:55:10.217100",
+    "timestamp": "2026-10-05T11:08:26.528068",
     "service": "hubspot_deals_pipeline_dev",
     "pipeline": {
         "pipeline_name": "hubspot_deals_extraction",
@@ -29,7 +29,7 @@ Payload: {
         "source_type": "hubspot_deals",
         "database_health": {
             "healthy": true,
-            "timestamp": 1791176110.2016122,
+            "timestamp": 1791198506.4927094,
             "database": "hubspot_deals_data_dev",
             "host": "postgres_dev"
         },

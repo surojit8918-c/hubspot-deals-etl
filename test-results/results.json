@@ -21,13 +21,13 @@
         "created_at": "2026-10-04T13:36:20.129000+00:00",
         "updated_at": "2026-10-04T13:43:38.099000+00:00",
         "archived": false,
-        "_extracted_at": "2026-10-05T04:55:13.000124+00:00",
+        "_extracted_at": "2026-10-05T11:08:39.469753+00:00",
         "_scan_id": "deals-test-001",
         "_tenant_id": "test-portal",
         "_page_number": 1,
         "_source_service": "hubspot_deals",
-        "_dlt_load_id": "1791176112.2942536",
-        "_dlt_id": "qKNQBKYjJnmHig"
+        "_dlt_load_id": "1791198517.6974633",
+        "_dlt_id": "oBAOrqh12CExCQ"
       },
       {
         "id": "352125385452",
@@ -47,13 +47,13 @@
         "created_at": "2026-10-04T13:56:05.264000+00:00",
         "updated_at": "2026-10-04T13:56:25.850000+00:00",
         "archived": false,
-        "_extracted_at": "2026-10-05T04:55:13.000124+00:00",
+        "_extracted_at": "2026-10-05T11:08:39.469753+00:00",
         "_scan_id": "deals-test-001",
         "_tenant_id": "test-portal",
         "_page_number": 1,
         "_source_service": "hubspot_deals",
-        "_dlt_load_id": "1791176112.2942536",
-        "_dlt_id": "np+mGuB+DNa0iw"
+        "_dlt_load_id": "1791198517.6974633",
+        "_dlt_id": "DZapd9yy8LcMiw"
       },
       {
         "id": "352125385456",
@@ -73,13 +73,13 @@
         "created_at": "2026-10-04T13:57:59.608000+00:00",
         "updated_at": "2026-10-04T13:58:13.878000+00:00",
         "archived": false,
-        "_extracted_at": "2026-10-05T04:55:13.000124+00:00",
+        "_extracted_at": "2026-10-05T11:08:39.469753+00:00",
         "_scan_id": "deals-test-001",
         "_tenant_id": "test-portal",
         "_page_number": 1,
         "_source_service": "hubspot_deals",
-        "_dlt_load_id": "1791176112.2942536",
-        "_dlt_id": "KZ8PmAnV5nZn6Q"
+        "_dlt_load_id": "1791198517.6974633",
+        "_dlt_id": "tzKOG/o1nO76Qg"
       },
       {
         "id": "352552945365",
@@ -99,13 +99,13 @@
         "created_at": "2026-10-04T13:45:59.535000+00:00",
         "updated_at": "2026-10-04T13:47:21.978000+00:00",
         "archived": false,
-        "_extracted_at": "2026-10-05T04:55:13.000124+00:00",
+        "_extracted_at": "2026-10-05T11:08:39.469753+00:00",
         "_scan_id": "deals-test-001",
         "_tenant_id": "test-portal",
         "_page_number": 1,
         "_source_service": "hubspot_deals",
-        "_dlt_load_id": "1791176112.2942536",
-        "_dlt_id": "q0nnAA1P+c0Pww"
+        "_dlt_load_id": "1791198517.6974633",
+        "_dlt_id": "XiHl/vRgXlAM/g"
       },
       {
         "id": "352552945389",
@@ -125,13 +125,13 @@
         "created_at": "2026-10-04T13:54:01.314000+00:00",
         "updated_at": "2026-10-04T13:54:40.115000+00:00",
         "archived": false,
-        "_extracted_at": "2026-10-05T04:55:13.000124+00:00",
+        "_extracted_at": "2026-10-05T11:08:39.469753+00:00",
         "_scan_id": "deals-test-001",
         "_tenant_id": "test-portal",
         "_page_number": 1,
         "_source_service": "hubspot_deals",
-        "_dlt_load_id": "1791176112.2942536",
-        "_dlt_id": "ZY1Qor6iJQNo9A"
+        "_dlt_load_id": "1791198517.6974633",
+        "_dlt_id": "8FxD+rtJt1vZXA"
       }
     ],
     "pagination": {
