@@ -54,8 +54,12 @@ class Job(Base):
         "JobCheckpoint", back_populates="job", cascade="all, delete-orphan"
     )
 
-    def to_dict(self):
+    def to_dict(self, include_auth: bool = False):
         """Convert to dictionary for JSON serialization"""
+        clean_config = dict(self.config) if self.config else {}
+        if not include_auth:
+            clean_config.pop("auth", None)
+
         return {
             "scanId": self.id,  # Keep API compatibility
             "organizationId": self.organizationId,
@@ -68,7 +72,7 @@ class Job(Base):
             ),
             "recordsExtracted": self.recordsExtracted,
             "errorMessage": self.errorMessage,
-            "config": self.config,
+            "config": clean_config,
             "metadata": self.job_metadata,  # Map back to 'metadata' for API compatibility
         }
 
@@ -163,6 +167,11 @@ class JobCheckpoint(Base):
     @classmethod
     def create_checkpoint(cls, job_id: str, phase: str, **kwargs):
         """Create a new checkpoint with common parameters"""
+        from config import Config
+        batch_size = kwargs.get("batch_size")
+        if batch_size is None:
+            batch_size = getattr(Config, "HUBSPOT_PAGE_SIZE", 100)
+
         return cls(
             job_id=job_id,
             phase=phase,
@@ -170,7 +179,7 @@ class JobCheckpoint(Base):
             totalEstimated=kwargs.get("total_estimated"),
             cursor=kwargs.get("cursor"),
             pageNumber=kwargs.get("page_number", 0),
-            batchSize=kwargs.get("batch_size", 100),
+            batchSize=batch_size,
             lastProcessedId=kwargs.get("last_processed_id"),
             lastProcessedTimestamp=kwargs.get("last_processed_timestamp"),
             checkpoint_data=kwargs.get("checkpoint_data", {}),

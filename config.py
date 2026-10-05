@@ -248,6 +248,11 @@ class Config:
                     'handlers': ['console'],
                     'propagate': False
                 },
+                'sqlalchemy.engine': {
+                    'level': 'WARNING',
+                    'handlers': ['console'],
+                    'propagate': False
+                },
                 'requests': {
                     'level': 'WARNING',
                     'handlers': ['console'],
@@ -400,6 +405,10 @@ class ProductionConfig(Config):
         # Validate database connection
         if not cls.DB_PASSWORD:
             raise ValueError("DB_PASSWORD must be set in production")
+            
+        # Validate encryption password
+        if cls.ENCRYPTION_PASSWORD == 'default-password-change-in-production':
+            raise ValueError("CONFIG_PASSWORD / ENCRYPTION_PASSWORD must be changed from default in production environment")
 
 
 # Configuration mapping
@@ -428,8 +437,9 @@ def get_config(config_name: str = None) -> Config:
     config_class = config_by_name.get(config_name, DevelopmentConfig)
     
     # Validate production config if needed
-    if config_name == 'production':
-        config_class.validate_production_config()
+    if config_name in ('production', 'staging'):
+        if hasattr(config_class, 'validate_production_config'):
+            config_class.validate_production_config()
     
     return config_class
 
@@ -445,5 +455,5 @@ def get_database_engine_config() -> Dict[str, Any]:
         'pool_timeout': config.DB_POOL_TIMEOUT,
         'pool_recycle': config.DB_POOL_RECYCLE,
         'pool_pre_ping': True,
-        'echo': config.DEBUG and config.LOG_LEVEL == 'DEBUG'
+        'echo': False
     }

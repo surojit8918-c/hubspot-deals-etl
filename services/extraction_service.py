@@ -352,14 +352,14 @@ class ExtractionService:
                 "completed_at": datetime.now(timezone.utc).isoformat(),
             }
             current_job = self.job_service.get_job(job_id)
-            if current_job and current_job.get("status") == JobStatus.CANCELLED.value:
+            if current_job and current_job.get("status") in (JobStatus.CANCELLED.value, JobStatus.PAUSED.value):
                 self.logger.info(
-                    "Job was cancelled during execution, keeping cancelled status",
-                    extra={"operation": "execute_scan", "job_id": job_id}
+                    f"Job status is {current_job.get('status')} during execution, preserving status",
+                    extra={"operation": "execute_scan", "job_id": job_id, "status": current_job.get("status")}
                 )
                 return  # Don't mark as completed
             
-            # Only complete if not cancelled
+            # Only complete if not cancelled or paused
             self.job_service.complete_job(job_id, records_extracted, metadata)
 
             self.logger.info(

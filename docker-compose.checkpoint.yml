@@ -1,0 +1,6 @@
+services:
+  hubspot_deals_service_dev:
+    environment:
+      - HUBSPOT_PAGE_SIZE=1
+      - HUBSPOT_TEST_DELAY_SECONDS=6
+      - CHECKPOINT_EVERY_N_PAGES=2

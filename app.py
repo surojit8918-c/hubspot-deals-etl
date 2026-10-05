@@ -35,6 +35,15 @@ def create_app(config_name: str = None) -> Flask:
     
     # Setup logging
     setup_logging(app, config)
+
+    # Security check for default encryption password
+    if config.ENCRYPTION_PASSWORD == 'default-password-change-in-production':
+        if not config.TESTING:
+            app.logger.warning(
+                "SECURITY WARNING: Using default ENCRYPTION_PASSWORD / CONFIG_PASSWORD ('default-password-change-in-production'). "
+                "Set CONFIG_PASSWORD in environment / .env for security."
+            )
+
     # Initialize database tables
     initialize_database()
     

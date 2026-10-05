@@ -33,14 +33,6 @@ class JobService:
                 job_dict = job.to_dict()
 
                 self.logger.info(
-                    "Creating job",
-                    extra={
-                        "operation": "create_job",
-                        "job_dict": job_dict,
-                    },
-                )
-
-                self.logger.info(
                     "Job created",
                     extra={
                         "operation": "create_job",
@@ -71,7 +63,7 @@ class JobService:
             )
             raise
 
-    def get_job(self, job_id: str, decrypt: bool = False) -> Optional[Dict[str, Any]]:
+    def get_job(self, job_id: str, decrypt: bool = False, include_auth: bool = False) -> Optional[Dict[str, Any]]:
         try:
             with get_db_session_scope() as db:
                 job = db.query(Job).filter(Job.id == job_id).first()
@@ -85,10 +77,10 @@ class JobService:
                             "status": job.status,
                         },
                     )
-                    job_dict = job.to_dict()
+                    job_dict = job.to_dict(include_auth=(decrypt or include_auth))
 
                     # Decrypt auth if requested and auth exists
-                    if decrypt and job_dict.get("config").get("auth"):
+                    if decrypt and job_dict.get("config") and job_dict["config"].get("auth"):
                         try:
                             job_dict["config"]["auth"] = self.encrypter.decrypt(
                                 job_dict["config"]["auth"]
