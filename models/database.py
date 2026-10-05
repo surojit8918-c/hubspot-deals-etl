@@ -95,7 +95,10 @@ class DatabaseManager:
     def init_tables(self, drop_existing: bool = False):
         """Create all database tables"""
         try:
-            from models.models import Base
+            try:
+                from .models import Base
+            except ImportError:
+                from models.models import Base
             
             if drop_existing:
                 logger.warning("Dropping all existing tables...")
