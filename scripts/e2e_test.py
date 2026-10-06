@@ -28,7 +28,8 @@ def main():
     load_env_file(os.path.join(project_root, ".env"))
 
     access_token = os.environ.get("HUBSPOT_ACCESS_TOKEN")
-    results_dir = os.path.join(project_root, "test-results")
+    results_dir = os.path.join(project_root, "test-results", "e2e-run")
+    os.makedirs(results_dir, exist_ok=True)
     os.makedirs(results_dir, exist_ok=True)
 
     print(f"=== HubSpot Deals ETL E2E Verification ===")
@@ -111,7 +112,7 @@ def main():
 
                 # Fetch Results
                 r_results = requests.get(f"{args.base_url}/api/results/deals-test-001/result?tableName=hubspot_deals", timeout=5)
-                results_ok = (r_results.status_code == 200)
+                results_ok = (r_results.status_code == 200 and r_results.json().get("data", {}).get("pagination", {}).get("total") == 5)
                 log_result("Scan Results API", results_ok, f"GET /api/results/deals-test-001/result HTTP {r_results.status_code}")
                 
                 if results_ok:

@@ -52,3 +52,6 @@ logs/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Output of scripts/e2e_test.py (regenerated on every run)
+test-results/e2e-run/
