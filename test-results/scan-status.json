@@ -1,0 +1,56 @@
+﻿{
+    "success":  true,
+    "data":  {
+                 "scanId":  "deals-test-005",
+                 "organizationId":  "test-portal",
+                 "type":  "deal",
+                 "status":  "completed",
+                 "startTime":  "2026-10-06T02:56:48.687132+00:00",
+                 "endTime":  "2026-10-06T02:56:51.941856+00:00",
+                 "lastHeartbeat":  "2026-10-06T02:56:51.232569+00:00",
+                 "recordsExtracted":  5,
+                 "errorMessage":  null,
+                 "config":  {
+                                "filters":  {
+                                                "includeArchived":  false
+                                            },
+                                "type":  [
+                                             "deal"
+                                         ]
+                            },
+                 "metadata":  {
+                                  "pipeline_name":  "hubspot_deals_extraction",
+                                  "destination":  "postgres",
+                                  "dataset_name":  "hubspot_deals_test_portal",
+                                  "source_type":  "hubspot_deals",
+                                  "extraction_summary":  {
+                                                             "total_records":  5
+                                                         },
+                                  "completed_at":  "2026-10-06T02:56:51.890571+00:00"
+                              },
+                 "duration":  3.254724,
+                 "checkpointInfo":  {
+                                        "latestCheckpoint":  {
+                                                                 "id":  13,
+                                                                 "job_id":  "deals-test-005",
+                                                                 "createdAt":  "2026-10-06T02:56:51.197904+00:00",
+                                                                 "phase":  "main_data_completed",
+                                                                 "recordsProcessed":  5,
+                                                                 "totalEstimated":  null,
+                                                                 "cursor":  null,
+                                                                 "pageNumber":  1,
+                                                                 "batchSize":  100,
+                                                                 "lastProcessedId":  null,
+                                                                 "lastProcessedTimestamp":  null,
+                                                                 "checkpoint_data":  {
+                                                                                         "pages_processed":  1,
+                                                                                         "last_page_records":  5,
+                                                                                         "service":  "hubspot_deals"
+                                                                                     },
+                                                                 "progress_percentage":  null
+                                                             },
+                                        "progress":  null,
+                                        "lastCheckpointAt":  "2026-10-06T02:56:51.197904+00:00"
+                                    }
+             }
+}

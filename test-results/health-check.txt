@@ -1,39 +1,39 @@
-/health status: 200
-Payload: {
-  "pipeline": {
-    "database_health": {
-      "database": "hubspot_deals_data_dev",
-      "healthy": true,
-      "host": "postgres_dev",
-      "timestamp": 1791198506.3776479
-    },
-    "destination_type": "postgres",
-    "pipeline_name": "hubspot_deals_extraction",
-    "source_type": "hubspot_deals",
-    "supports_checkpoints": true
-  },
-  "service": "hubspot_deals_pipeline_dev",
-  "status": "healthy",
-  "timestamp": "2026-10-05T11:08:26.409809"
+﻿Generated: 2026-10-06 08:29:37 (local time)
+GET http://localhost:5200/health -> HTTP 200
+{
+    "pipeline":  {
+                     "database_health":  {
+                                             "database":  "hubspot_deals_data_dev",
+                                             "healthy":  true,
+                                             "host":  "postgres_dev",
+                                             "timestamp":  1791255577.5508718
+                                         },
+                     "destination_type":  "postgres",
+                     "pipeline_name":  "hubspot_deals_extraction",
+                     "source_type":  "hubspot_deals",
+                     "supports_checkpoints":  true
+                 },
+    "service":  "hubspot_deals_pipeline_dev",
+    "status":  "healthy",
+    "timestamp":  "2026-10-06T02:59:37.559211"
 }
 
-
-/api/health status: 200
-Payload: {
-    "status": "healthy",
-    "timestamp": "2026-10-05T11:08:26.528068",
-    "service": "hubspot_deals_pipeline_dev",
-    "pipeline": {
-        "pipeline_name": "hubspot_deals_extraction",
-        "destination_type": "postgres",
-        "source_type": "hubspot_deals",
-        "database_health": {
-            "healthy": true,
-            "timestamp": 1791198506.4927094,
-            "database": "hubspot_deals_data_dev",
-            "host": "postgres_dev"
-        },
-        "supports_checkpoints": true
-    }
+GET http://localhost:5200/api/health -> HTTP 200
+{
+    "status":  "healthy",
+    "timestamp":  "2026-10-06T02:59:37.752002",
+    "service":  "hubspot_deals_pipeline_dev",
+    "pipeline":  {
+                     "pipeline_name":  "hubspot_deals_extraction",
+                     "destination_type":  "postgres",
+                     "source_type":  "hubspot_deals",
+                     "database_health":  {
+                                             "healthy":  true,
+                                             "timestamp":  1791255577.740945,
+                                             "database":  "hubspot_deals_data_dev",
+                                             "host":  "postgres_dev"
+                                         },
+                     "supports_checkpoints":  true
+                 }
 }
 
