@@ -58,10 +58,23 @@ cp .env.example .env
 Edit `.env`:
 ```env
 HUBSPOT_ACCESS_TOKEN=pat-na1-your-actual-private-app-token
+CONFIG_PASSWORD=a-long-random-secret-at-least-32-chars
 ```
 
 > ⚠️ **Security Warning**: Never commit `.env` or share your access token. The `.gitignore` file is configured to exclude `.env`.
 
+`CONFIG_PASSWORD` encrypts the access token stored for each scan. Set it to your own long random value and never commit it. Generate one:
+
+```powershell
+# PowerShell
+-join ((48..57 + 65..90 + 97..122) | Get-Random -Count 48 | ForEach-Object { [char]$_ })
+```
+```bash
+# Linux / macOS
+openssl rand -base64 36
+```
+
+If it is empty or left at the default, the service warns in development and refuses to start in staging/production.
 ### 2. Run with Docker Compose
 
 Start the PostgreSQL database and Flask extraction service:
@@ -176,6 +189,14 @@ python scripts/e2e_test.py --no-docker
 
 ---
 
+### Checkpoint / pause-resume test (test-only override)
+`docker-compose.checkpoint.yml` slows the dev service down (page size 1, 6 s delay per page, checkpoint every 2 pages) so a scan can be paused in the middle. It is not part of the default setup. Use it only for the pause/resume test:
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.checkpoint.yml up -d --build
+```
+
+Switch back to the normal setup with `docker compose up -d --build`. Real results of these tests are in `test-results/README.md`.
 ## 🔧 Troubleshooting
 
 | Symptom / Error | Cause | Resolution |
