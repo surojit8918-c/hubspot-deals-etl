@@ -19,8 +19,8 @@ This document records the HubSpot developer test account and private app setup d
 
 ## 🎯 Setup Verification Checklist
 
-- [ ] Developer Test Account created at https://developers.hubspot.com/
-- [ ] Test Portal created inside the developer portal
-- [ ] Private App created with scope `crm.objects.deals.read`
-- [ ] Access Token generated and copied to `.env` file
-- [ ] 5 Test Deals created in Sales Pipeline with specified values
+- [x] Developer Test Account created at https://developers.hubspot.com/
+- [x] Test Portal created inside the developer portal
+- [x] Private App created with scope `crm.objects.deals.read`
+- [x] Access Token generated and copied to `.env` file
+- [x] 5 Test Deals created in Sales Pipeline with specified values
