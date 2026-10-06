@@ -44,13 +44,11 @@ def create_api():
     
     # Create namespaces
     scan_ns = Namespace('scan', description='Scan operations')
-    users_ns = Namespace('users', description='User-related operations')
     results_ns = Namespace('results', description='Results retrieval operations')
     pipeline_ns = Namespace('pipeline', description='Pipeline operations')
     maintenance_ns = Namespace('maintenance', description='Maintenance operations')
     
     api.add_namespace(scan_ns)
-    api.add_namespace(users_ns)
     api.add_namespace(results_ns)
     api.add_namespace(pipeline_ns)
     api.add_namespace(maintenance_ns)
@@ -409,7 +407,7 @@ def create_api():
 
     @results_ns.route('/<string:scan_id>/result')
     class GetScanResults(Resource):
-        @results_ns.param('tableName', 'Name of the table to query (default: users)', default='users')
+        @results_ns.param('tableName', 'Name of the table to query (default: hubspot_deals)', default='hubspot_deals')
         @results_ns.param('limit', f'Number of records per page (max {api_config["max_results_limit"]})', type=int, default=api_config['default_results_limit'])
         @results_ns.param('offset', 'Number of records to skip', type=int, default=0)
         @results_ns.response(404, 'Scan not found')
@@ -420,7 +418,7 @@ def create_api():
             request_id = getattr(g, 'request_id', str(uuid.uuid4()))
             
             try:
-                table_name = request.args.get('tableName', 'users')
+                table_name = request.args.get('tableName', 'hubspot_deals')
                 
                 # Validate pagination
                 try:

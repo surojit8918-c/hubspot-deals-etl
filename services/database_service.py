@@ -95,7 +95,7 @@ class DatabaseService:
             self.logger.warning(f"Error getting tables: {str(e)}")
             return []
 
-    def get_scan_data(self, dataset_name: str, table_name: str = "users", 
+    def get_scan_data(self, dataset_name: str, table_name: str = "hubspot_deals", 
                       limit: int = 100, offset: int = 0) -> Dict[str, Any]:
         """Get scan data with pagination"""
         try:
@@ -164,11 +164,7 @@ class DatabaseService:
                 
         except Exception as e:
             self.logger.warning(f"Error getting table list: {str(e)}")
-            return [{
-                "name": "users",
-                "rowCount": 0,
-                "extractedCount": 0
-            }]
+            return []
 
     def get_database_info(self) -> Dict[str, Any]:
         """Get database statistics and health information"""
