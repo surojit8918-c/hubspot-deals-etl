@@ -453,7 +453,14 @@ def create_api():
                     )
                     return {"success": True, "data": result['data']}
                 else:
-                    status_code = 404 if "not found" in result['message'].lower() else 400
+                    if "does not exist" in result['message'].lower() or "table" in result['message'].lower():
+                        status_code = 400
+                    elif "scan not found" in result['message'].lower() or "dataset name not found" in result['message'].lower():
+                        status_code = 404
+                    elif "not found" in result['message'].lower():
+                        status_code = 404
+                    else:
+                        status_code = 400
                     logger.warning(
                         "Results not available",
                         extra={

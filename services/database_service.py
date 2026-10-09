@@ -107,6 +107,15 @@ class DatabaseService:
             )
             
             with pipeline.sql_client() as client:
+                # Query available tables before constructing table-specific SQL queries
+                available_tables = self.get_available_tables(client, dataset_name)
+                if table_name not in available_tables:
+                    self.logger.warning(f"Table '{table_name}' does not exist in schema '{dataset_name}'")
+                    return {
+                        "success": False,
+                        "message": f"Table '{table_name}' does not exist in schema '{dataset_name}'"
+                    }
+
                 queries = build_sql_queries(dataset_name, table_name, limit, offset)
                 
                 # Get total count
@@ -117,9 +126,6 @@ class DatabaseService:
                 
                 # Get paginated data
                 rows = self.execute_data_query(client, queries['data'], columns)
-                
-                # Get available tables
-                available_tables = self.get_available_tables(client, dataset_name)
                 
                 return {
                     "success": True,
