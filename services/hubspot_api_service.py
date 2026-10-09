@@ -74,6 +74,7 @@ class HubSpotAPIService:
         rate_limit: Optional[int] = None,
         window_seconds: Optional[int] = None,
         max_retries: Optional[int] = None,
+        max_rate_limit_retries: Optional[int] = None,
         backoff_seconds: Optional[float] = None,
         test_delay_seconds: Optional[float] = None,
     ):
@@ -82,6 +83,7 @@ class HubSpotAPIService:
         self.rate_limit = rate_limit if rate_limit is not None else Config.HUBSPOT_API_RATE_LIMIT
         self.window_seconds = window_seconds if window_seconds is not None else Config.HUBSPOT_RATE_LIMIT_WINDOW_SECONDS
         self.max_retries = max_retries if max_retries is not None else Config.HUBSPOT_API_MAX_RETRIES
+        self.max_rate_limit_retries = max_rate_limit_retries if max_rate_limit_retries is not None else Config.HUBSPOT_API_MAX_RATE_LIMIT_RETRIES
         self.backoff_seconds = backoff_seconds if backoff_seconds is not None else Config.HUBSPOT_API_RETRY_BACKOFF_SECONDS
         self.test_delay_seconds = test_delay_seconds if test_delay_seconds is not None else Config.HUBSPOT_TEST_DELAY_SECONDS
 
@@ -103,11 +105,11 @@ class HubSpotAPIService:
         if self.test_delay_seconds > 0:
             time.sleep(self.test_delay_seconds)
 
-        attempt = 0
+        retry_attempt = 0
+        rate_limit_attempt = 0
         masked_tok = mask_token(access_token)
 
         while True:
-            attempt += 1
             self.limiter.acquire()
             start_time = time.time()
 
@@ -149,26 +151,27 @@ class HubSpotAPIService:
 
                 # Rate limit: 429
                 if response.status_code == 429:
+                    rate_limit_attempt += 1
                     retry_after_hdr = response.headers.get("Retry-After")
                     try:
                         retry_after = float(retry_after_hdr) if retry_after_hdr else 10.0
                     except ValueError:
                         retry_after = 10.0
 
-                    if attempt <= self.max_retries:
+                    if rate_limit_attempt <= self.max_rate_limit_retries:
                         logger.warning(
                             "HubSpot API rate limit 429 encountered, waiting to retry",
                             extra={
                                 "operation": "hubspot_api_rate_limit",
-                                "attempt": attempt,
-                                "max_retries": self.max_retries,
+                                "attempt": rate_limit_attempt,
+                                "max_retries": self.max_rate_limit_retries,
                                 "retry_after": retry_after
                             }
                         )
                         time.sleep(retry_after)
                         continue
                     else:
-                        raise HubSpotRateLimitError(f"Rate limit 429 exceeded after {attempt} attempts", status_code=429)
+                        raise HubSpotRateLimitError(f"Rate limit 429 exceeded after {rate_limit_attempt} attempts", status_code=429)
 
                 # 4xx client errors (non-retryable except 429 handled above)
                 if 400 <= response.status_code < 500:
@@ -186,14 +189,15 @@ class HubSpotAPIService:
 
                 # 5xx server errors
                 if response.status_code >= 500:
-                    if attempt <= self.max_retries:
-                        backoff = self.backoff_seconds * (2 ** (attempt - 1)) + random.uniform(0, 0.5)
+                    retry_attempt += 1
+                    if retry_attempt <= self.max_retries:
+                        backoff = self.backoff_seconds * (2 ** (retry_attempt - 1)) + random.uniform(0, 0.5)
                         logger.warning(
                             "HubSpot API server error, retrying",
                             extra={
                                 "operation": "hubspot_api_retry",
                                 "status_code": response.status_code,
-                                "attempt": attempt,
+                                "attempt": retry_attempt,
                                 "backoff_seconds": round(backoff, 2)
                             }
                         )
@@ -201,21 +205,22 @@ class HubSpotAPIService:
                         continue
                     else:
                         raise HubSpotAPIError(
-                            f"HubSpot API server error {response.status_code} after {attempt} attempts",
+                            f"HubSpot API server error {response.status_code} after {retry_attempt} attempts",
                             status_code=response.status_code,
                             retryable=True
                         )
 
             except (requests.Timeout, requests.ConnectionError) as e:
                 duration_ms = round((time.time() - start_time) * 1000, 2)
-                if attempt <= self.max_retries:
-                    backoff = self.backoff_seconds * (2 ** (attempt - 1)) + random.uniform(0, 0.5)
+                retry_attempt += 1
+                if retry_attempt <= self.max_retries:
+                    backoff = self.backoff_seconds * (2 ** (retry_attempt - 1)) + random.uniform(0, 0.5)
                     logger.warning(
                         "HubSpot API network error, retrying",
                         extra={
                             "operation": "hubspot_api_retry",
                             "error": str(e),
-                            "attempt": attempt,
+                            "attempt": retry_attempt,
                             "backoff_seconds": round(backoff, 2)
                         }
                     )
