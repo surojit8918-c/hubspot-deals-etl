@@ -47,6 +47,21 @@ def create_app(config_name: str = None) -> Flask:
     # Initialize database tables
     initialize_database()
     
+    # Startup crash detection for orphaned running jobs
+    try:
+        from services.job_service import JobService
+        job_service = JobService()
+        crashed = job_service.detect_crashed_jobs()
+        if crashed:
+            app.logger.warning(
+                f"Startup crash detection: marked {len(crashed)} orphaned jobs as crashed",
+                extra={"crashed_jobs": [j.get("id") for j in crashed]}
+            )
+        else:
+            app.logger.info("Startup crash detection: no orphaned jobs found")
+    except Exception as e:
+        app.logger.error(f"Startup crash detection failed: {e}", exc_info=True)
+
     api = create_api()
     # Initialize Flask-RESTX API
     api.init_app(app)
