@@ -36,6 +36,10 @@ def create_app(config_name: str = None) -> Flask:
     # Setup logging
     setup_logging(app, config)
 
+    # Setup Coordinator HMAC Authentication
+    from api.security import enforce_coordinator_auth
+    app.before_request(enforce_coordinator_auth)
+
     # Security check for default encryption password
     if config.ENCRYPTION_PASSWORD == 'default-password-change-in-production':
         if not config.TESTING:

@@ -13,10 +13,11 @@ class Config:
     DEBUG = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     TESTING = False
     
-    # Encryption settings
+    # Encryption & Authentication settings
     ENCRYPTION_ENABLED = os.environ.get('ENCRYPTION_ENABLED', 'True').lower() == 'true'
     ENCRYPTION_PASSWORD = os.environ.get('CONFIG_PASSWORD', 'default-password-change-in-production')
     ENCRYPTION_ALGORITHM = os.environ.get('CONFIG_ENCRYPTION_ALGORITHM', 'SHA512')
+    COORDINATOR_KEY = os.environ.get('COORDINATOR_KEY', 'dev-coordinator-secret-key')
 
     # Server settings
     HOST = os.environ.get('HOST', '0.0.0.0')

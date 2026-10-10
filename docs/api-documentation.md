@@ -24,6 +24,36 @@ The `hubspot_deals` service exposes a RESTful API built with Flask and Flask-RES
 
 ## 🔐 Authentication & Security
 
+- **Coordinator HMAC Authentication**: All protected API endpoints (`/api/*`) require Coordinator authentication via HTTP headers:
+  - **`X-Coordinator-Signature`**: HMAC-SHA256 hex digest of the raw HTTP request body payload computed using `COORDINATOR_KEY` (e.g., `X-Coordinator-Signature: sha256=<hex_digest>`).
+  - **`X-Coordinator-Key`**: Direct secret key matching `COORDINATOR_KEY` verified via constant-time comparison (`hmac.compare_digest`).
+- **Whitelisted Endpoints** (No authentication required):
+  - `GET /health` and `GET /api/health` (Health Checks)
+  - `GET /docs/` & OpenAPI specs (Swagger Documentation)
+  - `GET /` (Service Index)
+  - `OPTIONS` requests (CORS Preflight)
+- **Error Response (`401 Unauthorized`)**:
+  If missing or invalid signature/key headers are provided:
+  ```json
+  {
+    "success": false,
+    "message": "Unauthorized: Invalid or missing coordinator signature"
+  }
+  ```
+- **Curl Examples**:
+  ```bash
+  # Using X-Coordinator-Key
+  curl -X POST http://localhost:5200/api/scan/start \
+    -H "Content-Type: application/json" \
+    -H "X-Coordinator-Key: dev-coordinator-secret-key" \
+    -d '{"scanId": "scan-100", "organizationId": "org-1", "config": {"auth": {"accessToken": "pat-na1-12345"}}}'
+
+  # Using X-Coordinator-Signature (HMAC-SHA256)
+  # Signature = HMAC-SHA256(COORDINATOR_KEY, request_body)
+  curl -X GET http://localhost:5200/api/results/scan-100/result?tableName=hubspot_deals \
+    -H "X-Coordinator-Signature: sha256=a1b2c3d4e5f6..."
+  ```
+
 - **HubSpot Access Token**: Passed inside the start scan request body under `config.auth.accessToken`.
 - **Token Masking**: Access tokens are masked in logs (e.g. `pat-na1-****abcd`) and encrypted at rest in the internal database. Plaintext tokens are **never** logged, printed, or returned in API responses.
 

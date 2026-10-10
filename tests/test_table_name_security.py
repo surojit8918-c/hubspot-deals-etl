@@ -88,7 +88,8 @@ class TestTableNameSecurity(unittest.TestCase):
                 "results": [{"id": 1, "dealname": "Test Deal"}]
             }
         }
-        response = self.client.get("/api/results/scan-123/result?tableName=hubspot_deals")
+        headers = {"X-Coordinator-Key": "dev-coordinator-secret-key"}
+        response = self.client.get("/api/results/scan-123/result?tableName=hubspot_deals", headers=headers)
         self.assertEqual(response.status_code, 200)
         data = response.get_json()
         self.assertTrue(data["success"])
@@ -99,7 +100,8 @@ class TestTableNameSecurity(unittest.TestCase):
             "success": False,
             "message": "Table 'non_existent' does not exist in schema 'dataset_123'"
         }
-        response = self.client.get("/api/results/scan-123/result?tableName=non_existent")
+        headers = {"X-Coordinator-Key": "dev-coordinator-secret-key"}
+        response = self.client.get("/api/results/scan-123/result?tableName=non_existent", headers=headers)
         self.assertEqual(response.status_code, 400)
         data = response.get_json()
         self.assertFalse(data["success"])
@@ -112,7 +114,8 @@ class TestTableNameSecurity(unittest.TestCase):
             "success": False,
             "message": f"Table '{malicious_payload}' does not exist in schema 'dataset_123'"
         }
-        response = self.client.get(f"/api/results/scan-123/result?tableName={malicious_payload}")
+        headers = {"X-Coordinator-Key": "dev-coordinator-secret-key"}
+        response = self.client.get(f"/api/results/scan-123/result?tableName={malicious_payload}", headers=headers)
         self.assertEqual(response.status_code, 400)
         data = response.get_json()
         self.assertFalse(data["success"])
