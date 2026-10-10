@@ -58,11 +58,11 @@ def enforce_coordinator_auth():
     path = request.path
 
     # Whitelist public / unauthenticated endpoints
-    whitelisted_exact = ["/", "/health", "/api/health", "/favicon.ico", "/swagger.json"]
+    whitelisted_exact = ["/", "/health", "/api/health", "/favicon.ico", "/swagger.json", "/api/swagger.json"]
     if path in whitelisted_exact:
         return None
 
-    if path.startswith("/docs") or path.startswith("/swagger"):
+    if path.startswith("/docs") or path.startswith("/swagger") or path.endswith("swagger.json"):
         return None
 
     # Enforce coordinator authentication for all protected endpoints
