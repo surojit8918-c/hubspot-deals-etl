@@ -312,23 +312,16 @@ def create_data_source(
             if paging and paging.get("next") and paging["next"].get("after"):
                 next_cursor = paging["next"]["after"]
 
-            # Save periodic checkpoint (next_cursor is cursor for next page)
-            if checkpoint_callback and (page_count % checkpoint_interval == 0 or next_cursor is None):
-                try:
-                    checkpoint_callback(job_id, {
-                        "phase": "main_data" if next_cursor else "main_data_completed",
-                        "records_processed": total_records,
-                        "cursor": next_cursor,
-                        "page_number": page_count,
-                        "batch_size": page_size,
-                        "checkpoint_data": {
-                            "pages_processed": page_count,
-                            "last_page_records": page_records,
-                            "service": "hubspot_deals",
-                        }
-                    })
-                except Exception as cp_err:
-                    logger.warning("Failed to save checkpoint", extra={"job_id": job_id, "error": str(cp_err)})
+            current_state = filters.get("_extraction_state", {})
+            last_cursor = current_state.get("cursor") if current_state else None
+
+            # Update in-memory extraction state (tracking fetched state before DLT load completes)
+            filters["_extraction_state"] = {
+                "cursor": next_cursor if next_cursor is not None else last_cursor,
+                "records_processed": total_records,
+                "page_number": page_count,
+                "last_page_records": page_records
+            }
 
             if not next_cursor:
                 logger.info("Data extraction completed", extra={"job_id": job_id, "total_records": total_records, "total_pages": page_count})

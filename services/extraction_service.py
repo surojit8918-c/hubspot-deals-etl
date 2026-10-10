@@ -130,11 +130,12 @@ class ExtractionService:
                     return False
 
             enhanced_filters = enhance_filters_with_metadata(filters, job_id)
+            filters.update(enhanced_filters)
 
             return create_data_source(
                 job_config=job_config,
                 auth_config=auth_config,
-                filters=enhanced_filters,
+                filters=filters,
                 checkpoint_callback=checkpoint_callback,
                 check_cancel_callback=check_cancel_callback,
                 check_pause_callback=check_pause_callback,
@@ -332,13 +333,38 @@ class ExtractionService:
 
             pipeline.run(source_functions)
 
+            # Record verified loaded checkpoint cursor and record counts after DLT load succeeds
+            extraction_state = filters.get("_extraction_state", {})
+            if extraction_state:
+                final_cursor = extraction_state.get("cursor")
+                records_extracted = extraction_state.get("records_processed", 0)
+                page_number = extraction_state.get("page_number", 0)
+                try:
+                    self.job_service.save_checkpoint(job_id, {
+                        "phase": "main_data_completed",
+                        "records_processed": records_extracted,
+                        "cursor": final_cursor,
+                        "page_number": page_number,
+                        "checkpoint_data": {
+                            "pages_processed": page_number,
+                            "service": self.source_type
+                        }
+                    })
+                except Exception as cp_err:
+                    self.logger.warning(
+                        "Failed to save post-load checkpoint",
+                        extra={"job_id": job_id, "error": str(cp_err)}
+                    )
+
             # Post-load performance indexing (never fails the job)
             self._create_performance_indexes(pipeline, dataset_name)
 
             # Get final record count
             latest_checkpoint = self.job_service.get_latest_checkpoint(job_id)
             records_extracted = (
-                latest_checkpoint.get("recordsProcessed", 0) if latest_checkpoint else 0
+                latest_checkpoint.get("recordsProcessed", 0)
+                if latest_checkpoint
+                else (extraction_state.get("records_processed", 0) if extraction_state else 0)
             )
 
             # Build completion metadata
